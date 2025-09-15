@@ -28,6 +28,33 @@ class NotificationService {
     );
   }
 
+  Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'alarm_channel', // A unique channel ID
+      'Alarm Channel', // A channel name
+      channelDescription: 'This channel is used for alarm notifications.', // A channel description
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+      fullScreenIntent: true,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: payload,
+    );
+  }
+
   Future<void> scheduleDailyAlarms(int id, String title, String body, tz.TZDateTime scheduledTime, String imagePath) async {
     final bigPictureStyleInformation = BigPictureStyleInformation(
       FilePathAndroidBitmap(imagePath),
@@ -55,6 +82,7 @@ class NotificationService {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: id.toString(), // Pass the alarm ID as a payload
     );
@@ -64,7 +92,6 @@ class NotificationService {
     final scheduledTime = tz.TZDateTime.now(tz.local).add(Duration(minutes: minutes));
     await scheduleDailyAlarms(id, title, body, scheduledTime, imagePath);
   }
-
 
   Future<void> cancelAlarm(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);

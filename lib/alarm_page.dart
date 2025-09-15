@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/alarm_provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
+import 'package:myapp/pages/home_screen.dart';
 
 class AlarmPage extends StatefulWidget {
   final int alarmId;
@@ -27,11 +28,21 @@ class _AlarmPageState extends State<AlarmPage> {
   Future<void> _playSound() async {
     final sound = Provider.of<SettingsController>(context, listen: false).sound;
     await _player.play(AssetSource("audio/$sound"), volume: 1.0);
-    _player.setReleaseMode(ReleaseMode.loop); // დაიკრავს უწყვეტად
+    _player.setReleaseMode(ReleaseMode.loop);
   }
 
   void _stopSound() {
     _player.stop();
+  }
+
+  void _readPrayer() {
+    _stopSound();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeScreen(initialTabIndex: widget.alarmId),
+      ),
+    );
   }
 
   void _snooze(int minutes) {
@@ -77,7 +88,7 @@ class _AlarmPageState extends State<AlarmPage> {
         fit: StackFit.expand,
         children: [
           Image.asset(_getBackgroundImage(), fit: BoxFit.cover),
-          Container(color: Colors.black45), // ნახევრად გამჭვირვალე შავი
+          Container(color: Colors.black45),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -91,10 +102,7 @@ class _AlarmPageState extends State<AlarmPage> {
               ),
               const SizedBox(height: 40),
               ElevatedButton(
-                onPressed: null, // არააქტიური ღილაკი
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                ),
+                onPressed: _readPrayer, 
                 child: const Text("წაკითხვა"),
               ),
               const SizedBox(height: 15),

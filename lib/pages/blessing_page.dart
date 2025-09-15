@@ -37,7 +37,7 @@ class _BlessingPageState extends State<BlessingPage> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: index)),
+        MaterialPageRoute(builder: (context) => HomeScreen(initialTabIndex: index)),
       );
     }
   }

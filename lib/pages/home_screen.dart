@@ -9,9 +9,9 @@ import 'package:myapp/pages/prayer_detail_page.dart';
 import 'package:myapp/pages/settings_page.dart';
 
 class HomeScreen extends StatefulWidget {
-  final int initialIndex;
+  final int? initialTabIndex;
 
-  const HomeScreen({super.key, this.initialIndex = 0});
+  const HomeScreen({super.key, this.initialTabIndex});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,8 +24,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex;
+    _selectedIndex = 0;
     _prayers = List.from(prayerList);
+
+    if (widget.initialTabIndex != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final prayer = _prayers[widget.initialTabIndex!];
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PrayerDetailPage(
+                imagePath: prayer.imagePath,
+                title: prayer.title,
+                prayerText: prayer.prayerText,
+              ),
+            ),
+          );
+        }
+      });
+    }
   }
 
   void _onItemTapped(int index) {

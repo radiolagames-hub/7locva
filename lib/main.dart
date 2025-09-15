@@ -1,5 +1,7 @@
 
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/alarm_provider.dart';
@@ -18,12 +20,26 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
   }
 }
 
+// This function will be executed when the alarm fires.
+@pragma('vm:entry-point')
+void fireAlarm() {
+  NotificationService().showNotification(
+    id: DateTime.now().millisecondsSinceEpoch % 100000,
+    title: 'ლოცვის დროა!',
+    body: 'დროა, ილოცო!',
+    payload: 'alarm_payload',
+  );
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService().init(onDidReceiveNotificationResponse);
 
   final settingsController = SettingsController(SettingsService());
   await settingsController.loadSettings();
+
+  // Initialize the alarm manager
+  await AndroidAlarmManager.initialize();
 
   runApp(
     MultiProvider(
@@ -33,6 +49,17 @@ void main() async {
       ],
       child: const MyApp(),
     ),
+  );
+
+  // Schedule the alarm
+  final now = DateTime.now();
+  await AndroidAlarmManager.periodic(
+    const Duration(minutes: 1), // Check every minute
+    0, // Unique ID for the alarm
+    fireAlarm,
+    startAt: DateTime(now.year, now.month, now.day, now.hour, now.minute + 1),
+    exact: true,
+    wakeup: true,
   );
 }
 

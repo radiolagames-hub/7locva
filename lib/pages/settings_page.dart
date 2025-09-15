@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
@@ -11,18 +10,13 @@ class SettingsPage extends StatelessWidget {
     final settingsController = Provider.of<SettingsController>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('პარამეტრები'),
-      ),
+      appBar: AppBar(title: const Text('პარამეტრები')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'თემა',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('თემა', style: Theme.of(context).textTheme.titleLarge),
             Wrap(
               spacing: 8.0,
               children: <Widget>[
@@ -56,10 +50,7 @@ class SettingsPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            Text(
-              'შრიფტის ზომა',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('შრიფტის ზომა', style: Theme.of(context).textTheme.titleLarge),
             Slider(
               value: settingsController.fontSize,
               min: 12.0,
@@ -72,7 +63,7 @@ class SettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'მაღვიძარას ხმა',
+              'შეხსენების ხმა',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             DropdownButton<String>(
@@ -82,11 +73,12 @@ class SettingsPage extends StatelessWidget {
               },
               items: <String>['bell.mp3', 'alarm.mp3']
                   .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  })
+                  .toList(),
             ),
           ],
         ),

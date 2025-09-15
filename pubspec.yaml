@@ -20,6 +20,7 @@ dependencies:
   permission_handler: ^12.0.1
   shared_preferences: ^2.5.3
   audioplayers: ^6.0.0
+  android_alarm_manager_plus: ^5.0.0
 
 dev_dependencies:
   flutter_test:

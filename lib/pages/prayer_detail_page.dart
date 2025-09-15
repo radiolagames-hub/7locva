@@ -30,7 +30,7 @@ class _PrayerDetailPageState extends State<PrayerDetailPage> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: index)),
+        MaterialPageRoute(builder: (context) => HomeScreen(initialTabIndex: index)),
       );
     }
   }
