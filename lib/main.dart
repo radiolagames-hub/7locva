@@ -9,6 +9,7 @@ import 'package:myapp/services/notification_controller.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/services/settings_service.dart';
 import 'package:myapp/alarm_page.dart';
+import 'package:myapp/pages/splash_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -194,7 +195,7 @@ class MyApp extends StatelessWidget {
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: settingsController.themeMode,
-          home: const HomeScreen(),
+          home: const SplashScreen(),
           routes: {
             '/alarm': (context) {
               final int alarmId =

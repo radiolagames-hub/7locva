@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <application
-        android:label="myapp"
+        android:label="7 ლოცვა"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

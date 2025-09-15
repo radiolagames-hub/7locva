@@ -208,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
-                            Icon(Icons.alarm, color: theme.primaryColor, size: 28),
+                            Icon(Icons.alarm, color: theme.brightness == Brightness.dark ? Colors.white : theme.primaryColor, size: 28),
                             const SizedBox(width: 16.0),
                             Expanded(
                               child: Column(
