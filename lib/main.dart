@@ -7,10 +7,20 @@ import 'package:myapp/pages/home_screen.dart';
 import 'package:myapp/services/notification_service.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/services/settings_service.dart';
+import 'package:myapp/alarm_page.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+  if (notificationResponse.payload != null) {
+    debugPrint('notification payload: ${notificationResponse.payload}');
+    navigatorKey.currentState?.pushNamed('/alarm', arguments: notificationResponse.payload);
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init();
+  await NotificationService().init(onDidReceiveNotificationResponse);
 
   final settingsController = SettingsController(SettingsService());
   await settingsController.loadSettings();
@@ -201,11 +211,18 @@ class _MyAppState extends State<MyApp> {
         );
 
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: '7 ლოცვა',
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: settingsController.themeMode,
           home: const HomeScreen(),
+          routes: {
+            '/alarm': (context) {
+              final String alarmId = ModalRoute.of(context)!.settings.arguments as String;
+              return AlarmPage(alarmId: int.parse(alarmId));
+            },
+          },
           debugShowCheckedModeBanner: false,
         );
       },

@@ -13,7 +13,7 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  Future<void> init() async {
+  Future<void> init(void Function(NotificationResponse)? onDidReceiveNotificationResponse) async {
     tz.initializeTimeZones();
     final AndroidInitializationSettings initializationSettingsAndroid =
         const AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -22,7 +22,10 @@ class NotificationService {
       android: initializationSettingsAndroid,
     );
 
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+    );
   }
 
   Future<void> scheduleDailyAlarms(int id, String title, String body, tz.TZDateTime scheduledTime, String imagePath) async {
@@ -48,11 +51,12 @@ class NotificationService {
           importance: Importance.max,
           priority: Priority.high,
           styleInformation: bigPictureStyleInformation,
+          fullScreenIntent: true, // This is the key for full-screen notification
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
-      payload: 'alarm_payload',
+      payload: id.toString(), // Pass the alarm ID as a payload
     );
   }
 
