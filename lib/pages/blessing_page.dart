@@ -1,5 +1,8 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+import 'package:myapp/pages/home_screen.dart';
 
 class BlessingPage extends StatefulWidget {
   const BlessingPage({super.key});
@@ -11,6 +14,7 @@ class BlessingPage extends StatefulWidget {
 class _BlessingPageState extends State<BlessingPage> {
   late VideoPlayerController _controller1;
   late VideoPlayerController _controller2;
+  final int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -25,11 +29,27 @@ class _BlessingPageState extends State<BlessingPage> {
       });
   }
 
+  void _onItemTapped(int index) {
+    if (index == 3) {
+      SystemNavigator.pop();
+    } else if (index == 0) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: index)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('პატრიარქის კურთხევა'),
+        title: const Text('7 locva', style: TextStyle(fontFamily: 'Eka', color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -40,6 +60,31 @@ class _BlessingPageState extends State<BlessingPage> {
             _buildVideoPlayer(_controller2, 'კურთხევა 2'),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'მთავარი',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'კალენდარი',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'პარამეტრები',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.exit_to_app),
+            label: 'გასვლა',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -54,12 +99,10 @@ class _BlessingPageState extends State<BlessingPage> {
             ? AspectRatio(
                 aspectRatio: controller.value.aspectRatio,
                 child: Stack(
-                  alignment: Alignment.center, // Center the overlay
+                  alignment: Alignment.center,
                   children: <Widget>[
                     VideoPlayer(controller),
-                    // The play/pause overlay
                     _buildPlayPauseOverlay(controller),
-                    // The progress bar at the bottom
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -81,12 +124,12 @@ class _BlessingPageState extends State<BlessingPage> {
           controller.value.isPlaying ? controller.pause() : controller.play();
         });
       },
-      behavior: HitTestBehavior.translucent, // Make sure tap is detected on transparent areas
+      behavior: HitTestBehavior.translucent,
       child: controller.value.isPlaying
-          ? const SizedBox.shrink() // Show nothing when playing
+          ? const SizedBox.shrink()
           : Container(
               alignment: Alignment.center,
-              color: Colors.black26, // Semi-transparent background for better icon visibility
+              color: Colors.black26,
               child: const Icon(
                 Icons.play_arrow,
                 color: Colors.white,

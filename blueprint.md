@@ -2,37 +2,27 @@
 
 ## Overview
 
-This document outlines the architecture and features of the 7 Prayers Flutter application. The app is designed to provide users with a daily prayer schedule, including notifications and prayer content. It also includes a blessing page and a theme toggle for a personalized user experience.
+This document outlines the plan for developing a Flutter application that provides daily prayers, a calendar, and customizable settings.
 
-## Features
+## Current State
 
-- **Prayer Schedule:** The app displays a list of seven daily prayers, with the title, time, and an associated image for each prayer.
-- **Prayer Content:** Each prayer has a dedicated page with the prayer text.
-- **Notifications:** The app schedules daily notifications for each prayer time.
-- **Blessing Page:** A dedicated page with a blessing text.
-- **Theme Toggle:** Users can switch between light, dark, and system theme modes.
-- **Custom Fonts:** The app uses custom fonts for a unique and visually appealing design.
+The application has a home screen, a calendar page, and a settings page. The core functionality for settings management (theme and font size) is implemented. The application's theme has been updated to a new, modern design for both light and dark modes based on the provided specifications.
 
-## Project Structure
+## Plan
 
-- **`lib/main.dart`:** The main entry point of the application. Initializes the app and sets up the theme.
-- **`lib/pages/home_screen.dart`:** The main screen of the app, displaying the prayer schedule.
-- **`lib/pages/blessing_page.dart`:** The page with the blessing text.
-- **`lib/pages/morning_prayer_page.dart`:** The page with the morning prayer text.
-- **`lib/pages/afternoon_prayer_page.dart`:** The page with the afternoon prayer text.
-- **`lib/pages/evening_prayer_page.dart`:** The page with the evening prayer text.
-- **`lib/pages/midnight_prayer_page.dart`:** The page with the midnight prayer text.
-- **`lib/data/prayer_data.dart`:** The data source for the prayer schedule.
-- **`lib/models/prayer_model.dart`:** The data model for a single prayer.
-- **`lib/providers/alarm_provider.dart`:** The provider for scheduling and managing alarms.
-- **`lib/services/notification_service.dart`:** The service for handling local notifications.
-- **`lib/models/alarm_model.dart`:** The data model for a single alarm.
-- **`assets/fonts/`:** The directory with the custom fonts.
-- **`assets/images/`:** The directory with the images for the prayer schedule.
-- **`assets/audio/`:** The directory with the custom notification sound.
+### 1. UI/UX Refinement
 
-## Current Plan
+*   **Component Styling:** Review and update all UI components (buttons, cards, navigation bars, etc.) to ensure they align with the new design aesthetic. This includes applying the specified colors for different states (active, inactive) and elements.
+*   **Spacing and Shadows:** Apply consistent spacing (`8-16px`) between elements and add subtle shadows to cards and interactive elements to create depth, as per the design guidelines.
+*   **Accessibility:** Verify that text contrast ratios meet WCAG standards for readability in both light and dark themes across the application.
 
-I have completed all the requested changes. The app now has a new design, custom fonts, a theme toggle, a blessing page, and a complete prayer schedule with notifications.
+### 2. Feature Enhancements
 
-If you have any other requests, please let me know.
+*   **Calendar View:** Define and implement the functionality for the calendar page.
+*   **Patriarch's Blessing Page:** Implement the video player for the Patriarch's blessing.
+*   **Prayer Details:** Enhance the prayer details view, ensuring it uses the new theme correctly.
+
+### 3. Code Quality and Maintenance
+
+*   **Refactoring:** Refactor widgets into smaller, reusable components to improve maintainability and consistency.
+*   **Performance:** Ensure the application remains performant, especially with the new theme and potential animations or effects.
