@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/providers/alarm_provider.dart';
 
 class AlarmPage extends StatefulWidget {
   final int alarmId;
@@ -30,13 +32,13 @@ class _AlarmPageState extends State<AlarmPage> {
 
   void _snooze(int minutes) {
     _stopSound();
-    // აქ შეგიძლია ხელახლა დაგეგმო Notification X წუთში
-    Navigator.pop(context, "snooze_$minutes");
+    Provider.of<AlarmProvider>(context, listen: false).snoozeAlarm(widget.alarmId, minutes);
+    Navigator.pop(context);
   }
 
   void _dismiss() {
     _stopSound();
-    Navigator.pop(context, "dismiss");
+    Navigator.pop(context);
   }
 
   @override

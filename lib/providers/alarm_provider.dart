@@ -4,8 +4,9 @@ import 'package:myapp/services/notification_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class AlarmProvider with ChangeNotifier {
+  final NotificationService _notificationService = NotificationService();
+
   Future<void> scheduleAlarms() async {
-    final notificationService = NotificationService();
     for (int i = 0; i < prayerList.length; i++) {
       final prayer = prayerList[i];
       final timeParts = prayer.time.split(':');
@@ -19,7 +20,7 @@ class AlarmProvider with ChangeNotifier {
         scheduledTime = scheduledTime.add(const Duration(days: 1));
       }
 
-      await notificationService.scheduleDailyAlarms(
+      await _notificationService.scheduleDailyAlarms(
         i, // Use the index as the id
         prayer.title,
         'Prayer Time',
@@ -27,5 +28,16 @@ class AlarmProvider with ChangeNotifier {
         prayer.imagePath,
       );
     }
+  }
+
+  Future<void> snoozeAlarm(int id, int minutes) async {
+    final prayer = prayerList[id];
+    await _notificationService.snooze(
+      id,
+      prayer.title,
+      'Prayer Time',
+      minutes,
+      prayer.imagePath,
+    );
   }
 }
