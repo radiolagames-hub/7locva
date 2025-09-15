@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/data/prayer_data.dart';
@@ -5,8 +6,11 @@ import 'package:myapp/models/prayer.dart';
 import 'package:myapp/pages/blessing_page.dart';
 import 'package:myapp/pages/prayer_detail_page.dart';
 import 'package:myapp/pages/settings_page.dart';
+import 'package:myapp/providers/alarm_provider.dart';
 import 'package:myapp/widgets/app_bottom_navigation.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -32,7 +36,42 @@ class _HomeScreenState extends State<HomeScreen> {
       if (widget.initialTabIndex != null) {
         _pageController.jumpToPage(widget.initialTabIndex!);
       }
+      _requestPermissions();
     });
+  }
+
+  Future<void> _requestPermissions() async {
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed) {
+      await AwesomeNotifications().requestPermissionToSendNotifications();
+    }
+
+    var status = await Permission.systemAlertWindow.status;
+    if (status.isDenied) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Permission Required'),
+            content: const Text(
+                'This app needs permission to display over other apps to show full-screen prayer alarms. Please enable this permission in the app settings.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: const Text('Open Settings'),
+                onPressed: () {
+                  openAppSettings();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   void _onItemTapped(int index) {
@@ -64,10 +103,15 @@ class _HomeScreenState extends State<HomeScreen> {
         if (newHour > 23) newHour = 22;
       }
 
+      final newTime = '${newHour.toString().padLeft(2, '0')}:00';
+
       _prayers[index] = prayer.copyWith(
-        time: '${newHour.toString().padLeft(2, '0')}:00',
+        time: newTime,
         imagePath: 'assets/images/${newHour.toString().padLeft(2, '0')}.jpg',
       );
+      // Update the alarm
+      Provider.of<AlarmProvider>(context, listen: false)
+          .updateSingleAlarm(index, newTime);
     });
   }
 

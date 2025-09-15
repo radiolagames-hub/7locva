@@ -1,45 +1,48 @@
 
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/alarm_provider.dart';
 import 'package:myapp/pages/home_screen.dart';
-import 'package:myapp/services/notification_service.dart';
+import 'package:myapp/services/notification_controller.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/services/settings_service.dart';
 import 'package:myapp/alarm_page.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
-  if (notificationResponse.payload != null) {
-    debugPrint('notification payload: ${notificationResponse.payload}');
-    navigatorKey.currentState?.pushNamed('/alarm', arguments: notificationResponse.payload);
-  }
-}
-
-// This function will be executed when the alarm fires.
-@pragma('vm:entry-point')
-void fireAlarm() {
-  NotificationService().showNotification(
-    id: DateTime.now().millisecondsSinceEpoch % 100000,
-    title: 'ლოცვის დროა!',
-    body: 'დროა, ილოცო!',
-    payload: 'alarm_payload',
-  );
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init(onDidReceiveNotificationResponse);
+
+  await AwesomeNotifications().initialize(
+    'resource://drawable/res_app_icon',
+    [
+      NotificationChannel(
+        channelKey: 'alarm_channel',
+        channelName: 'Alarm Notifications',
+        channelDescription: 'Notification channel for prayer alarms',
+        defaultColor: const Color(0xFF7B4DFF),
+        ledColor: Colors.white,
+        importance: NotificationImportance.Max,
+        channelShowBadge: true,
+        soundSource: 'resource://raw/custom_sound',
+        criticalAlerts: true,
+        locked: true,
+      ),
+    ],
+    debug: true,
+  );
+
+  AwesomeNotifications().setListeners(
+    onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+    onNotificationCreatedMethod: NotificationController.onNotificationCreatedMethod,
+    onNotificationDisplayedMethod: NotificationController.onNotificationDisplayedMethod,
+    onDismissActionReceivedMethod: NotificationController.onDismissActionReceivedMethod,
+  );
 
   final settingsController = SettingsController(SettingsService());
   await settingsController.loadSettings();
-
-  // Initialize the alarm manager
-  await AndroidAlarmManager.initialize();
 
   runApp(
     MultiProvider(
@@ -50,84 +53,28 @@ void main() async {
       child: const MyApp(),
     ),
   );
-
-  // Schedule the alarm
-  final now = DateTime.now();
-  await AndroidAlarmManager.periodic(
-    const Duration(minutes: 1), // Check every minute
-    0, // Unique ID for the alarm
-    fireAlarm,
-    startAt: DateTime(now.year, now.month, now.day, now.hour, now.minute + 1),
-    exact: true,
-    wakeup: true,
-  );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    _requestPermissionsAndScheduleAlarms();
-  }
-
-  Future<void> _requestPermissionsAndScheduleAlarms() async {
-    final status = await Permission.scheduleExactAlarm.request();
-    if (status.isGranted) {
-      if (mounted) {
-        await Provider.of<AlarmProvider>(context, listen: false).scheduleAlarms();
-      }
-    } else if (status.isDenied || status.isPermanentlyDenied) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Permission Required'),
-            content: const Text(
-                'This app needs permission to schedule alarms to notify you of prayer times. Please enable this permission in the app settings.'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('Cancel'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              TextButton(
-                child: const Text('Open Settings'),
-                onPressed: () {
-                  openAppSettings();
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsController>(
       builder: (context, settingsController, child) {
         final TextTheme appTextTheme = TextTheme(
-          displayLarge: TextStyle(
+          displayLarge: const TextStyle(
               fontFamily: 'BpgNinoMtavruli',
               fontSize: 57,
               fontWeight: FontWeight.bold),
-          titleLarge: TextStyle(
+          titleLarge: const TextStyle(
               fontFamily: 'BpgNinoMtavruli',
               fontSize: 22,
               fontWeight: FontWeight.w500),
-          bodyMedium: TextStyle(
-              fontFamily: 'Eka', fontSize: 16),
+          bodyMedium: const TextStyle(fontFamily: 'Eka', fontSize: 16),
           bodyLarge: TextStyle(
               fontFamily: 'Eka', fontSize: settingsController.fontSize),
-          labelLarge: TextStyle(
+          labelLarge: const TextStyle(
               fontFamily: 'BpgNinoMtavruli',
               fontSize: 14,
               fontWeight: FontWeight.w600),
@@ -137,7 +84,9 @@ class _MyAppState extends State<MyApp> {
           useMaterial3: true,
           scaffoldBackgroundColor: const Color(0xFFFFFFFF),
           cardColor: const Color(0xFFF8F8F8),
-          textTheme: appTextTheme.apply(bodyColor: const Color(0xFF1A1A1A), displayColor: const Color(0xFF1A1A1A)),
+          textTheme: appTextTheme.apply(
+              bodyColor: const Color(0xFF1A1A1A),
+              displayColor: const Color(0xFF1A1A1A)),
           colorScheme: const ColorScheme.light(
             primary: Color(0xFF7B4DFF),
             onPrimary: Colors.white,
@@ -189,7 +138,9 @@ class _MyAppState extends State<MyApp> {
           useMaterial3: true,
           scaffoldBackgroundColor: const Color(0xFF121212),
           cardColor: const Color(0xFF1E1E1E),
-           textTheme: appTextTheme.apply(bodyColor: const Color(0xFFFFFFFF), displayColor: const Color(0xFFFFFFFF)),
+          textTheme: appTextTheme.apply(
+              bodyColor: const Color(0xFFFFFFFF),
+              displayColor: const Color(0xFFFFFFFF)),
           colorScheme: const ColorScheme.dark(
             primary: Color(0xFFBB86FC),
             onPrimary: Colors.black,
@@ -246,8 +197,9 @@ class _MyAppState extends State<MyApp> {
           home: const HomeScreen(),
           routes: {
             '/alarm': (context) {
-              final String alarmId = ModalRoute.of(context)!.settings.arguments as String;
-              return AlarmPage(alarmId: int.parse(alarmId));
+              final int alarmId =
+                  ModalRoute.of(context)!.settings.arguments as int;
+              return AlarmPage(alarmId: alarmId);
             },
           },
           debugShowCheckedModeBanner: false,

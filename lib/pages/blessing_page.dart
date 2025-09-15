@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:myapp/widgets/app_bottom_navigation.dart';
+import 'package:myapp/widgets/custom_app_bar.dart';
 
 class BlessingPage extends StatefulWidget {
   const BlessingPage({super.key});
@@ -49,15 +49,10 @@ class _BlessingPageState extends State<BlessingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     const int currentIndex = 0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('პატრიარქის კურთხევა', style: theme.appBarTheme.titleTextStyle),
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        elevation: theme.appBarTheme.elevation,
-      ),
+      appBar: const CustomAppBar(title: '7 locva'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
