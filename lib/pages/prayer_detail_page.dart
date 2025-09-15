@@ -1,9 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:myapp/pages/home_screen.dart';
+import 'package:myapp/widgets/app_bottom_navigation.dart';
 
-class PrayerDetailPage extends StatefulWidget {
+class PrayerDetailPage extends StatelessWidget {
   final String imagePath;
   final String title;
   final String prayerText;
@@ -15,23 +15,12 @@ class PrayerDetailPage extends StatefulWidget {
     required this.prayerText,
   });
 
-  @override
-  State<PrayerDetailPage> createState() => _PrayerDetailPageState();
-}
-
-class _PrayerDetailPageState extends State<PrayerDetailPage> {
-  final int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
+  void _onItemTapped(BuildContext context, int index) {
     if (index == 3) {
-      SystemNavigator.pop();
-    } else if (index == 0) {
-      Navigator.pop(context);
+      SystemNavigator.pop(); // Exit the app
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen(initialTabIndex: index)),
-      );
+      // Pop the current page and pass the selected index back to the previous screen (HomeScreen)
+      Navigator.pop(context, index);
     }
   }
 
@@ -39,12 +28,15 @@ class _PrayerDetailPageState extends State<PrayerDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // We set the current index to 0 (Home) because this page is conceptually part of the 'Home' flow.
+    const int currentIndex = 0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('7 locva', style: theme.appBarTheme.titleTextStyle),
         backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: theme.appBarTheme.elevation,
-        automaticallyImplyLeading: false,
+        // The back button is automatically added by Navigator.push, which is what we want.
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -52,11 +44,11 @@ class _PrayerDetailPageState extends State<PrayerDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              widget.title,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'BpgNinoMtavruli',
-                  ),
+              title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'BpgNinoMtavruli',
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8.0),
@@ -66,7 +58,7 @@ class _PrayerDetailPageState extends State<PrayerDetailPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12.0),
                 child: Image.asset(
-                  widget.imagePath,
+                  imagePath,
                   width: double.infinity,
                   height: 220,
                   fit: BoxFit.cover,
@@ -76,34 +68,16 @@ class _PrayerDetailPageState extends State<PrayerDetailPage> {
             ),
             const SizedBox(height: 16.0),
             Text(
-              widget.prayerText,
+              prayerText,
               style: theme.textTheme.bodyLarge,
               textAlign: TextAlign.justify,
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'მთავარი',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'კალენდარი',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'პარამეტრები',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.exit_to_app),
-            label: 'გასვლა',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: currentIndex, // Always highlight 'Home'
+        onTap: (index) => _onItemTapped(context, index),
       ),
     );
   }

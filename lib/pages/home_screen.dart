@@ -7,6 +7,7 @@ import 'package:myapp/pages/blessing_page.dart';
 import 'package:myapp/pages/calendar_page.dart';
 import 'package:myapp/pages/prayer_detail_page.dart';
 import 'package:myapp/pages/settings_page.dart';
+import 'package:myapp/widgets/app_bottom_navigation.dart';
 
 class HomeScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -20,39 +21,29 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex;
   late List<Prayer> _prayers;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = 0;
+    _selectedIndex = widget.initialTabIndex ?? 0;
     _prayers = List.from(prayerList);
-
-    if (widget.initialTabIndex != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final prayer = _prayers[widget.initialTabIndex!];
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PrayerDetailPage(
-                imagePath: prayer.imagePath,
-                title: prayer.title,
-                prayerText: prayer.prayerText,
-              ),
-            ),
-          );
-        }
-      });
-    }
+    // Jump to the initial page if specified
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialTabIndex != null) {
+        _pageController.jumpToPage(widget.initialTabIndex!);
+      }
+    });
   }
 
   void _onItemTapped(int index) {
     if (index == 3) {
-      SystemNavigator.pop();
+      SystemNavigator.pop(); // Exit the app
     } else {
       setState(() {
         _selectedIndex = index;
       });
+      _pageController.jumpToPage(index);
     }
   }
 
@@ -81,10 +72,50 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _navigateTo(BuildContext context, Widget page) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+
+    if (result is int) {
+      // The result is the index to switch to
+      _onItemTapped(result);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('7 locva', style: theme.appBarTheme.titleTextStyle),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        elevation: theme.appBarTheme.elevation,
+        automaticallyImplyLeading: false,
+      ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        children: [
+          _buildPrayerList(theme),
+          const CalendarPage(),
+          const SettingsPage(),
+        ],
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  Widget _buildPrayerList(ThemeData theme) {
     String formatTime(String time24) {
       final parts = time24.split(':');
       final hour = int.parse(parts[0]);
@@ -94,59 +125,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return '$hour12:${minute.toString().padLeft(2, '0')} $period';
     }
 
-    final List<Widget> widgetOptions = <Widget>[
-      _buildPrayerList(formatTime),
-      const CalendarPage(),
-      const SettingsPage(),
-    ];
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('7 locva', style: theme.appBarTheme.titleTextStyle),
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        elevation: theme.appBarTheme.elevation,
-      ),
-      body: widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'მთავარი',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'კალენდარი',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'პარამეტრები',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.exit_to_app),
-            label: 'გასვლა',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-      ),
-    );
-  }
-
-  Widget _buildPrayerList(String Function(String) formatTime) {
-    final theme = Theme.of(context);
-
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
           child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const BlessingPage()),
-              );
-            },
+            onPressed: () => _navigateTo(context, const BlessingPage()),
             icon: const Icon(Icons.video_library),
             label: const Text('პატრიარქის კურთხევა'),
             style: theme.elevatedButtonTheme.style,
@@ -172,18 +156,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PrayerDetailPage(
-                          imagePath: prayer.imagePath,
-                          title: prayer.title,
-                          prayerText: prayer.prayerText,
-                        ),
-                      ),
-                    );
-                  },
+                  onTap: () => _navigateTo(
+                    context,
+                    PrayerDetailPage(
+                      imagePath: prayer.imagePath,
+                      title: prayer.title,
+                      prayerText: prayer.prayerText,
+                    ),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                   child: Column(
                     children: [

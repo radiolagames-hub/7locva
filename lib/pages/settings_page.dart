@@ -1,86 +1,156 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:myapp/controllers/settings_controller.dart';
 
-class SettingsPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  String? _selectedSound = 'default';
+  bool _notificationsEnabled = true;
+  late AudioPlayer _audioPlayer;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer();
+    _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedSound = prefs.getString('notification_sound') ?? 'default';
+      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('notification_sound', _selectedSound!);
+    await prefs.setBool('notifications_enabled', _notificationsEnabled);
+  }
+
+  void _playSound(String sound) {
+    _audioPlayer.stop();
+    if (sound != 'default') {
+      _audioPlayer.play(AssetSource('sounds/$sound'));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final settingsController = Provider.of<SettingsController>(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('პარამეტრები')),
-      body: Padding(
+      backgroundColor: theme.colorScheme.surface, // Fix: Use surface instead of background
+      body: ListView(
         padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildSectionTitle(context, 'შეხსენებები'),
+          _buildNotificationToggle(theme),
+          const SizedBox(height: 16),
+          _buildSectionTitle(context, 'შეხსენების ხმა'),
+          _buildSoundSelection(theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationToggle(ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: SwitchListTile(
+        title: Text('შეხსენებების ჩართვა', style: theme.textTheme.bodyLarge),
+        value: _notificationsEnabled,
+        onChanged: (bool value) {
+          setState(() {
+            _notificationsEnabled = value;
+            _saveSettings();
+          });
+        },
+        // Fix: activeColor is deprecated. The theme will handle the color.
+      ),
+    );
+  }
+
+  Widget _buildSoundSelection(ThemeData theme) {
+    final sounds = {
+      'Default': 'default',
+      'Bell': 'bell.mp3',
+      'Chimes': 'chimes.mp3',
+      'Echo': 'echo.mp3',
+    };
+
+    // Fix: Using ListTile with Radio widgets to avoid deprecated properties on RadioListTile.
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('თემა', style: Theme.of(context).textTheme.titleLarge),
-            Wrap(
-              spacing: 8.0,
-              children: <Widget>[
-                ChoiceChip(
-                  label: const Text('ღია'),
-                  selected: settingsController.themeMode == ThemeMode.light,
-                  onSelected: (bool selected) {
-                    if (selected) {
-                      settingsController.updateThemeMode(ThemeMode.light);
+          children: sounds.entries.map((entry) {
+            final soundName = entry.key;
+            final soundFile = entry.value;
+
+            return ListTile(
+              title: Text(soundName, style: theme.textTheme.bodyLarge),
+              leading: Radio<String>(
+                value: soundFile,
+                groupValue: _selectedSound,
+                onChanged: (String? value) {
+                  setState(() {
+                    _selectedSound = value;
+                    _saveSettings();
+                    if (value != null) {
+                      _playSound(value);
                     }
-                  },
-                ),
-                ChoiceChip(
-                  label: const Text('მუქი'),
-                  selected: settingsController.themeMode == ThemeMode.dark,
-                  onSelected: (bool selected) {
-                    if (selected) {
-                      settingsController.updateThemeMode(ThemeMode.dark);
-                    }
-                  },
-                ),
-                ChoiceChip(
-                  label: const Text('სისტემური'),
-                  selected: settingsController.themeMode == ThemeMode.system,
-                  onSelected: (bool selected) {
-                    if (selected) {
-                      settingsController.updateThemeMode(ThemeMode.system);
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text('შრიფტის ზომა', style: Theme.of(context).textTheme.titleLarge),
-            Slider(
-              value: settingsController.fontSize,
-              min: 12.0,
-              max: 24.0,
-              divisions: 6,
-              label: settingsController.fontSize.round().toString(),
-              onChanged: (double value) {
-                settingsController.updateFontSize(value);
+                  });
+                },
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.play_circle_outline),
+                onPressed: () {
+                  _playSound(soundFile);
+                },
+                color: theme.colorScheme.secondary,
+              ),
+              onTap: () {
+                if (_selectedSound != soundFile) {
+                  setState(() {
+                    _selectedSound = soundFile;
+                    _saveSettings();
+                    _playSound(soundFile);
+                  });
+                }
               },
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'შეხსენების ხმა',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            DropdownButton<String>(
-              value: settingsController.sound,
-              onChanged: (String? newValue) {
-                settingsController.updateSound(newValue);
-              },
-              items: <String>['bell.mp3', 'alarm.mp3']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  })
-                  .toList(),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );

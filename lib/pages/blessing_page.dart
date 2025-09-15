@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:myapp/pages/home_screen.dart';
+import 'package:myapp/widgets/app_bottom_navigation.dart';
 
 class BlessingPage extends StatefulWidget {
   const BlessingPage({super.key});
@@ -14,42 +14,49 @@ class BlessingPage extends StatefulWidget {
 class _BlessingPageState extends State<BlessingPage> {
   late VideoPlayerController _controller1;
   late VideoPlayerController _controller2;
-  final int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _controller1 = VideoPlayerController.asset('assets/videos/video1.mp4')
       ..initialize().then((_) {
-        setState(() {}); // Ensure the first frame is shown
+        if (mounted) {
+          setState(() {});
+        }
       });
     _controller2 = VideoPlayerController.asset('assets/videos/video2.mp4')
       ..initialize().then((_) {
-        setState(() {}); // Ensure the first frame is shown
+        if (mounted) {
+          setState(() {});
+        }
       });
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(BuildContext context, int index) {
     if (index == 3) {
-      SystemNavigator.pop();
-    } else if (index == 0) {
-      Navigator.pop(context);
+      SystemNavigator.pop(); // Exit the app
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen(initialTabIndex: index)),
-      );
+      Navigator.pop(context, index);
     }
   }
 
   @override
+  void dispose() {
+    _controller1.dispose();
+    _controller2.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const int currentIndex = 0;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('7 locva', style: TextStyle(fontFamily: 'Eka', color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        title: Text('პატრიარქის კურთხევა', style: theme.appBarTheme.titleTextStyle),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        elevation: theme.appBarTheme.elevation,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -61,30 +68,9 @@ class _BlessingPageState extends State<BlessingPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'მთავარი',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'კალენდარი',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'პარამეტრები',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.exit_to_app),
-            label: 'გასვლა',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: currentIndex,
+        onTap: (index) => _onItemTapped(context, index),
       ),
     );
   }
@@ -95,54 +81,39 @@ class _BlessingPageState extends State<BlessingPage> {
       children: [
         Text(title, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
-        controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: controller.value.aspectRatio,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: <Widget>[
-                    VideoPlayer(controller),
-                    _buildPlayPauseOverlay(controller),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: VideoProgressIndicator(controller, allowScrubbing: true),
-                    ),
-                  ],
+        if (controller.value.isInitialized)
+          AspectRatio(
+            aspectRatio: controller.value.aspectRatio,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: <Widget>[
+                VideoPlayer(controller),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      controller.value.isPlaying ? controller.pause() : controller.play();
+                    });
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: controller.value.isPlaying
+                        ? const SizedBox.shrink()
+                        : Container(
+                            key: ValueKey<bool>(controller.value.isPlaying),
+                            alignment: Alignment.center,
+                            color: Colors.black26,
+                            child: const Icon(Icons.play_arrow, color: Colors.white, size: 64.0),
+                          ),
+                  ),
                 ),
-              )
-            : const Center(child: CircularProgressIndicator()),
+                VideoProgressIndicator(controller, allowScrubbing: true),
+              ],
+            ),
+          )
+        else
+          const Center(child: CircularProgressIndicator()),
       ],
     );
-  }
-
-  Widget _buildPlayPauseOverlay(VideoPlayerController controller) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          controller.value.isPlaying ? controller.pause() : controller.play();
-        });
-      },
-      behavior: HitTestBehavior.translucent,
-      child: controller.value.isPlaying
-          ? const SizedBox.shrink()
-          : Container(
-              alignment: Alignment.center,
-              color: Colors.black26,
-              child: const Icon(
-                Icons.play_arrow,
-                color: Colors.white,
-                size: 64.0,
-              ),
-            ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller1.dispose();
-    _controller2.dispose();
-    super.dispose();
   }
 }
