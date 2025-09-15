@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 class SettingsService {
   static const String _themeModeKey = 'themeMode';
   static const String _fontSizeKey = 'fontSize';
+  static const String _soundKey = 'sound'; // Key for storing the sound
 
   Future<ThemeMode> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
@@ -33,5 +34,17 @@ class SettingsService {
   Future<void> setFontSize(double fontSize) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_fontSizeKey, fontSize);
+  }
+
+  // Method to get the selected sound
+  Future<String> getSound() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_soundKey) ?? 'bell.mp3'; // Default to bell.mp3
+  }
+
+  // Method to set the selected sound
+  Future<void> setSound(String sound) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_soundKey, sound);
   }
 }

@@ -70,6 +70,24 @@ class SettingsPage extends StatelessWidget {
                 settingsController.updateFontSize(value);
               },
             ),
+            const SizedBox(height: 24),
+            Text(
+              'მაღვიძარას ხმა',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            DropdownButton<String>(
+              value: settingsController.sound,
+              onChanged: (String? newValue) {
+                settingsController.updateSound(newValue);
+              },
+              items: <String>['bell.mp3', 'alarm.mp3']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
           ],
         ),
       ),

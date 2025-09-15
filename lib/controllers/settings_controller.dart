@@ -7,15 +7,18 @@ class SettingsController with ChangeNotifier {
 
   ThemeMode _themeMode = ThemeMode.system;
   double _fontSize = 16.0;
+  String _sound = 'bell.mp3'; // Default sound
 
   SettingsController(this._settingsService);
 
   ThemeMode get themeMode => _themeMode;
   double get fontSize => _fontSize;
+  String get sound => _sound;
 
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.getThemeMode();
     _fontSize = await _settingsService.getFontSize();
+    _sound = await _settingsService.getSound();
     notifyListeners();
   }
 
@@ -32,6 +35,14 @@ class SettingsController with ChangeNotifier {
 
     _fontSize = newSize;
     await _settingsService.setFontSize(newSize);
+    notifyListeners();
+  }
+
+  Future<void> updateSound(String? newSound) async {
+    if (newSound == null || newSound == _sound) return;
+
+    _sound = newSound;
+    await _settingsService.setSound(newSound);
     notifyListeners();
   }
 }

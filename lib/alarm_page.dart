@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/alarm_provider.dart';
+import 'package:myapp/controllers/settings_controller.dart';
 
 class AlarmPage extends StatefulWidget {
   final int alarmId;
@@ -18,11 +19,14 @@ class _AlarmPageState extends State<AlarmPage> {
   void initState() {
     super.initState();
     _player = AudioPlayer();
-    _playSound();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       _playSound();
+    });
   }
 
   Future<void> _playSound() async {
-    await _player.play(AssetSource("audio/bell.mp3"), volume: 1.0);
+    final sound = Provider.of<SettingsController>(context, listen: false).sound;
+    await _player.play(AssetSource("audio/$sound"), volume: 1.0);
     _player.setReleaseMode(ReleaseMode.loop); // დაიკრავს უწყვეტად
   }
 
