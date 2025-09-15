@@ -1,13 +1,12 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/data/prayer_data.dart';
 import 'package:myapp/models/prayer.dart';
 import 'package:myapp/pages/blessing_page.dart';
-import 'package:myapp/pages/calendar_page.dart';
 import 'package:myapp/pages/prayer_detail_page.dart';
 import 'package:myapp/pages/settings_page.dart';
 import 'package:myapp/widgets/app_bottom_navigation.dart';
+import 'package:myapp/widgets/custom_app_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -37,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 3) {
+    if (index == 2) {
       SystemNavigator.pop(); // Exit the app
     } else {
       setState(() {
@@ -89,12 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('7 locva', style: theme.appBarTheme.titleTextStyle),
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        elevation: theme.appBarTheme.elevation,
-        automaticallyImplyLeading: false,
-      ),
+      appBar: const CustomAppBar(title: '7 locva'),
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
@@ -104,7 +98,6 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         children: [
           _buildPrayerList(theme),
-          const CalendarPage(),
           const SettingsPage(),
         ],
       ),

@@ -6,6 +6,7 @@ class SettingsService {
   static const String _themeModeKey = 'themeMode';
   static const String _fontSizeKey = 'fontSize';
   static const String _soundKey = 'sound'; // Key for storing the sound
+  static const String _notificationsEnabledKey = 'notificationsEnabled';
 
   Future<ThemeMode> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
@@ -46,5 +47,15 @@ class SettingsService {
   Future<void> setSound(String sound) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_soundKey, sound);
+  }
+
+  Future<bool> getNotificationsEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_notificationsEnabledKey) ?? false;
+  }
+
+  Future<void> setNotificationsEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_notificationsEnabledKey, value);
   }
 }

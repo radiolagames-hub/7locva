@@ -20,10 +20,6 @@ class AppBottomNavigation extends StatelessWidget {
           label: 'მთავარი',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'კალენდარი',
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           label: 'პარამეტრები',
         ),

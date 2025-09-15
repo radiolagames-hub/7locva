@@ -1,68 +1,35 @@
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/controllers/settings_controller.dart';
+import 'package:myapp/widgets/sound_selection.dart';
+import 'package:myapp/widgets/custom_app_bar.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  String? _selectedSound = 'default';
-  bool _notificationsEnabled = true;
-  late AudioPlayer _audioPlayer;
-
-  @override
-  void initState() {
-    super.initState();
-    _audioPlayer = AudioPlayer();
-    _loadSettings();
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedSound = prefs.getString('notification_sound') ?? 'default';
-      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    });
-  }
-
-  Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('notification_sound', _selectedSound!);
-    await prefs.setBool('notifications_enabled', _notificationsEnabled);
-  }
-
-  void _playSound(String sound) {
-    _audioPlayer.stop();
-    if (sound != 'default') {
-      _audioPlayer.play(AssetSource('sounds/$sound'));
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final settingsController = Provider.of<SettingsController>(context);
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface, // Fix: Use surface instead of background
+      backgroundColor: theme.colorScheme.surface,
+      appBar: const CustomAppBar(title: 'პარამეტრები'),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           _buildSectionTitle(context, 'შეხსენებები'),
-          _buildNotificationToggle(theme),
+          _buildNotificationToggle(context, settingsController, theme),
           const SizedBox(height: 16),
           _buildSectionTitle(context, 'შეხსენების ხმა'),
-          _buildSoundSelection(theme),
+          const SoundSelection(),
+          const SizedBox(height: 16),
+          _buildSectionTitle(context, 'თემა'),
+          _buildThemeSelector(context, settingsController, theme),
+          const SizedBox(height: 16),
+          _buildSectionTitle(context, 'ლოცვების ტექსტის ზომა'),
+          _buildFontSizeSlider(context, settingsController, theme),
         ],
       ),
     );
@@ -81,76 +48,93 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildNotificationToggle(ThemeData theme) {
+  Widget _buildNotificationToggle(
+      BuildContext context, SettingsController controller, ThemeData theme) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SwitchListTile(
         title: Text('შეხსენებების ჩართვა', style: theme.textTheme.bodyLarge),
-        value: _notificationsEnabled,
-        onChanged: (bool value) {
-          setState(() {
-            _notificationsEnabled = value;
-            _saveSettings();
-          });
+        value: controller.notificationsEnabled,
+        onChanged: (bool value) async {
+          if (value) {
+            final status = await Permission.systemAlertWindow.request();
+            if (status.isGranted) {
+              controller.setNotificationsEnabled(value);
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        'Permission denied. The widget requires this permission to function.'),
+                  ),
+                );
+              }
+            }
+          } else {
+            controller.setNotificationsEnabled(value);
+          }
         },
-        // Fix: activeColor is deprecated. The theme will handle the color.
       ),
     );
   }
 
-  Widget _buildSoundSelection(ThemeData theme) {
-    final sounds = {
-      'Default': 'default',
-      'Bell': 'bell.mp3',
-      'Chimes': 'chimes.mp3',
-      'Echo': 'echo.mp3',
-    };
-
-    // Fix: Using ListTile with Radio widgets to avoid deprecated properties on RadioListTile.
+  Widget _buildThemeSelector(
+      BuildContext context, SettingsController controller, ThemeData theme) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: sounds.entries.map((entry) {
-            final soundName = entry.key;
-            final soundFile = entry.value;
+        child: SegmentedButton<ThemeMode>(
+          segments: const <ButtonSegment<ThemeMode>>[
+            ButtonSegment<ThemeMode>(
+                value: ThemeMode.light,
+                label: Text('Light'),
+                icon: Icon(Icons.light_mode)),
+            ButtonSegment<ThemeMode>(
+                value: ThemeMode.dark,
+                label: Text('Dark'),
+                icon: Icon(Icons.dark_mode)),
+            ButtonSegment<ThemeMode>(
+                value: ThemeMode.system,
+                label: Text('System'),
+                icon: Icon(Icons.auto_mode)),
+          ],
+          selected: <ThemeMode>{controller.themeMode},
+          onSelectionChanged: (Set<ThemeMode> newSelection) {
+            controller.setThemeMode(newSelection.first);
+          },
+        ),
+      ),
+    );
+  }
 
-            return ListTile(
-              title: Text(soundName, style: theme.textTheme.bodyLarge),
-              leading: Radio<String>(
-                value: soundFile,
-                groupValue: _selectedSound,
-                onChanged: (String? value) {
-                  setState(() {
-                    _selectedSound = value;
-                    _saveSettings();
-                    if (value != null) {
-                      _playSound(value);
-                    }
-                  });
-                },
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.play_circle_outline),
-                onPressed: () {
-                  _playSound(soundFile);
-                },
-                color: theme.colorScheme.secondary,
-              ),
-              onTap: () {
-                if (_selectedSound != soundFile) {
-                  setState(() {
-                    _selectedSound = soundFile;
-                    _saveSettings();
-                    _playSound(soundFile);
-                  });
-                }
+  Widget _buildFontSizeSlider(
+      BuildContext context, SettingsController controller, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'ლოცვების ტექსტის ზომა: ${controller.fontSize.toStringAsFixed(1)}',
+              style: theme.textTheme.bodyLarge,
+            ),
+            Slider(
+              value: controller.fontSize,
+              min: 12.0,
+              max: 24.0,
+              divisions: 12,
+              label: controller.fontSize.round().toString(),
+              onChanged: (double value) {
+                controller.setFontSize(value);
               },
-            );
-          }).toList(),
+            ),
+          ],
         ),
       ),
     );
