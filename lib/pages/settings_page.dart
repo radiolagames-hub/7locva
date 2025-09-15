@@ -66,7 +66,9 @@ class SettingsPage extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                        'Permission denied. The widget requires this permission to function.'),
+                      'ნებართვა მიუღებელია. ვიჯეტს ეს ნებართვა სჭირდება ფუნქციონირებისთვის.',
+                      style: TextStyle(fontFamily: 'BpgNinoMtavruli'),
+                    ),
                   ),
                 );
               }
@@ -89,17 +91,11 @@ class SettingsPage extends StatelessWidget {
         child: SegmentedButton<ThemeMode>(
           segments: const <ButtonSegment<ThemeMode>>[
             ButtonSegment<ThemeMode>(
-                value: ThemeMode.light,
-                label: Text('Light'),
-                icon: Icon(Icons.light_mode)),
+                value: ThemeMode.light, label: Text('Light'), icon: Icon(Icons.light_mode)),
             ButtonSegment<ThemeMode>(
-                value: ThemeMode.dark,
-                label: Text('Dark'),
-                icon: Icon(Icons.dark_mode)),
+                value: ThemeMode.dark, label: Text('Dark'), icon: Icon(Icons.dark_mode)),
             ButtonSegment<ThemeMode>(
-                value: ThemeMode.system,
-                label: Text('System'),
-                icon: Icon(Icons.auto_mode)),
+                value: ThemeMode.system, label: Text('System'), icon: Icon(Icons.auto_mode)),
           ],
           selected: <ThemeMode>{controller.themeMode},
           onSelectionChanged: (Set<ThemeMode> newSelection) {

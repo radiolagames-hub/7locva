@@ -13,8 +13,8 @@ class _SoundSelectionState extends State<SoundSelection> {
   String? _selectedSound;
   late AudioPlayer _audioPlayer;
   final Map<String, String> sounds = {
-    'Alarm': 'alarm.mp3',
-    'Bell': 'bell.mp3',
+    'მაღვიძარა': 'alarm.mp3',
+    'ზარი': 'bell.mp3',
   };
 
   @override
@@ -68,7 +68,7 @@ class _SoundSelectionState extends State<SoundSelection> {
               segments: sounds.entries.map((entry) {
                 return ButtonSegment<String>(
                   value: entry.value,
-                  label: Text(entry.key),
+                  label: Text(entry.key, style: const TextStyle(fontFamily: 'BpgNinoMtavruli')),
                 );
               }).toList(),
               selected: <String>{_selectedSound!},

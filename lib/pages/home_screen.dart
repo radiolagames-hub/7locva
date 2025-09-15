@@ -52,16 +52,16 @@ class _HomeScreenState extends State<HomeScreen> {
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: const Text('Permission Required'),
+            title: const Text('ნებართვაა საჭირო', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
             content: const Text(
-                'This app needs permission to display over other apps to show full-screen prayer alarms. Please enable this permission in the app settings.'),
+                'აპლიკაციას სჭირდება ნებართვა, რათა სხვა აპლიკაციების თავზე გამოაჩინოს ლოცვის შეტყობინებები. გთხოვთ, ჩართოთ ეს ნებართვა აპლიკაციის პარამეტრებში.', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
             actions: <Widget>[
               TextButton(
-                child: const Text('Cancel'),
+                child: const Text('გაუქმება', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               TextButton(
-                child: const Text('Open Settings'),
+                child: const Text('პარამეტრების გახსნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
                 onPressed: () {
                   openAppSettings();
                   Navigator.of(context).pop();
