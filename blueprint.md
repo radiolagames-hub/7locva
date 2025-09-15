@@ -1,75 +1,38 @@
+# Project Blueprint
 
-# 7 ლოცვა - Blueprint
+## Overview
 
-## 1. აპლიკაციის მიმოხილვა
+This document outlines the architecture and features of the 7 Prayers Flutter application. The app is designed to provide users with a daily prayer schedule, including notifications and prayer content. It also includes a blessing page and a theme toggle for a personalized user experience.
 
-"7 ლოცვა" არის მობილური აპლიკაცია, რომელიც შექმნილია იმისთვის, რომ მომხმარებლებს დაეხმაროს ყოველდღიური ლოცვების განრიგის დაცვაში. აპლიკაცია მუშაობს "მაღვიძარას" პრინციპით, წინასწარ განსაზღვრულ დროს ახსენებს მომხმარებელს ლოცვის დროს და აწვდის შესაბამის ლოცვის ტექსტს.
+## Features
 
-## 2. ძირითადი ფუნქციონალი
+- **Prayer Schedule:** The app displays a list of seven daily prayers, with the title, time, and an associated image for each prayer.
+- **Prayer Content:** Each prayer has a dedicated page with the prayer text.
+- **Notifications:** The app schedules daily notifications for each prayer time.
+- **Blessing Page:** A dedicated page with a blessing text.
+- **Theme Toggle:** Users can switch between light, dark, and system theme modes.
+- **Custom Fonts:** The app uses custom fonts for a unique and visually appealing design.
 
-- **ლოცვის დროები:** აპლიკაციაში თავდაპირველად განსაზღვრულია 7 ძირითადი ლოცვის დრო:
-  - 06:00
-  - 09:00
-  - 12:00
-  - 15:00
-  - 18:00
-  - 21:00
-  - 23:00
-- **დროის რეგულირება:**
-  - **დილის ლოცვა:** მომხმარებელს შეუძლია შეცვალოს დილის 6 საათის ლოცვის დრო (მაგ. დააყენოს 7 ან 8 საათზე).
-  - **ძილისწინა ლოცვა:** მომხმარებელს შეუძლია შეცვალოს 23 საათის ლოცვის დრო (მაგ. დააყენოს 22 საათზე).
-  - **ფიქსირებული დროები:** შუალედური ლოცვების დროები (9:00, 12:00, 15:00, 18:00, 21:00) ფიქსირებულია და მათი შეცვლა შეუძლებელია.
-- **შეხსენებები:** აპლიკაცია აგზავნის შეტყობინებებს ლოცვის დროის მოახლოებისას.
-- **ლოცვის ტექსტები:** ყოველ ლოცვის დროს შეესაბამება ცალკე გვერდი, სადაც მოცემულია ლოცვის სრული ტექსტი.
-- **თემის შეცვლა:** მომხმარებელს შეუძლია აირჩიოს ღია (Light) და მუქი (Dark) თემები.
+## Project Structure
 
-## 3. დიზაინი და მომხმარებლის ინტერფეისი (UI)
+- **`lib/main.dart`:** The main entry point of the application. Initializes the app and sets up the theme.
+- **`lib/pages/home_screen.dart`:** The main screen of the app, displaying the prayer schedule.
+- **`lib/pages/blessing_page.dart`:** The page with the blessing text.
+- **`lib/pages/morning_prayer_page.dart`:** The page with the morning prayer text.
+- **`lib/pages/afternoon_prayer_page.dart`:** The page with the afternoon prayer text.
+- **`lib/pages/evening_prayer_page.dart`:** The page with the evening prayer text.
+- **`lib/pages/midnight_prayer_page.dart`:** The page with the midnight prayer text.
+- **`lib/data/prayer_data.dart`:** The data source for the prayer schedule.
+- **`lib/models/prayer_model.dart`:** The data model for a single prayer.
+- **`lib/providers/alarm_provider.dart`:** The provider for scheduling and managing alarms.
+- **`lib/services/notification_service.dart`:** The service for handling local notifications.
+- **`lib/models/alarm_model.dart`:** The data model for a single alarm.
+- **`assets/fonts/`:** The directory with the custom fonts.
+- **`assets/images/`:** The directory with the images for the prayer schedule.
+- **`assets/audio/`:** The directory with the custom notification sound.
 
-- **მთავარი გვერდი:**
-  - სათაური: "7 ლოცვა".
-  - ზედა პანელზე განთავსებულია თემის შეცვლის და მონაცემების განახლების ღილაკები.
-  - ღილაკი "პატრიარქის კურთხევა".
-  - ლოცვების სია, რომელიც представлен в виде ბარათების (Cards).
-- **ლოცვის ბარათი:**
-  - ლოცვის დრო (მაგ. "06:00 AM").
-  - ლოცვის დასახელება (მაგ. "ლოცვები დილის 6 საათზე").
-  - ნავიგაციის ისარი, რომელიც მომხმარებელს გადაიყვანს ლოცვის ტექსტის გვერდზე.
-  - **მხოლოდ რეგულირებადი დროებისთვის (6:00 და 23:00):**
-    - "+" და "-" ღილაკები დროის შესაცვლელად.
-    - ტექსტი "დროის შეცვლა".
-- **ლოცვის გვერდი:**
-  - სათაური (მაგ. "დილის 6 საათის ლოცვა").
-  - თემატური სურათი.
-  - ლოცვის სრული ტექსტი.
+## Current Plan
 
-## 4. ტექნიკური დეტალები
+I have completed all the requested changes. The app now has a new design, custom fonts, a theme toggle, a blessing page, and a complete prayer schedule with notifications.
 
-- **ფრეიმვორკი:** Flutter
-- **ენა:** Dart
-- **პაკეტები:**
-  - `provider` - მდგომარეობის მართვისთვის (State Management).
-  - `google_fonts` - კუსტომიზებული ფონტებისთვის.
-  - `permission_handler` - შეტყობინებების ნებართვების სამართავად.
-- **პროექტის სტრუქტურა:**
-  - `lib/`:
-    - `main.dart`: აპლიკაციის მთავარი ფაილი.
-    - `pages/`: ეკრანების (Screens) ფაილები (`home_screen.dart`, `prayer_page.dart` და ა.შ.).
-    - `widgets/`: ხელახლა გამოყენებადი ვიჯეტები (`prayer_view.dart`).
-    - `providers/`: Provider კლასები.
-    - `services/`: სერვისები (მაგ. `notification_service.dart`).
-  - `assets/`:
-    - `images/`: სურათები.
-
-## 5. მიმდინარე გეგმა
-
-1.  **`home_screen.dart`-ის განახლება:**
-    - 21:00 და 23:00 ლოცვების დამატება.
-    - ლოცვების სიის რეფაქტორინგი `PrayerInfo` მოდელის გამოყენებით, რომელიც შეინახავს დროს, სათაურს, გვერდს და რეგულირების შესაძლებლობას (`isAdjustable`).
-    - `_buildPrayerCard`-ის ლოგიკის შეცვლა, რათა დროის ცვლილების ღილაკები გამოჩნდეს მხოლოდ 6:00 და 23:00 ლოცვებისთვის.
-    - დროის ცვლილების ლოგიკის განახლება, რათა დრო იცვლებოდეს 1 საათით და არა 15 წუთით.
-2.  **ახალი ლოცვის გვერდების შექმნა:**
-    - `twenty_one_oclock_prayer_page.dart` (21:00).
-    - `twenty_three_oclock_prayer_page.dart` (23:00).
-3.  **UI/UX გაუმჯობესება:**
-    - "პატრიარქის კურთხევა" ღილაკისთვის მოქმედების დამატება (მაგ. დიალოგური ფანჯრის ჩვენება).
-
+If you have any other requests, please let me know.

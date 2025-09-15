@@ -47,22 +47,7 @@ class NotificationService {
           channelDescription: 'Channel for daily alarms',
           importance: Importance.max,
           priority: Priority.high,
-          sound: const RawResourceAndroidNotificationSound('custom_sound'),
           styleInformation: bigPictureStyleInformation,
-          actions: <AndroidNotificationAction>[
-            const AndroidNotificationAction(
-              'view_action',
-              'View',
-            ),
-            const AndroidNotificationAction(
-              'snooze_2_min_action',
-              '+2 min',
-            ),
-            const AndroidNotificationAction(
-              'snooze_5_min_action',
-              '+5 min',
-            ),
-          ]
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

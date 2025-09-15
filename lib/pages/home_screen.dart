@@ -1,28 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:myapp/main.dart';
+import 'package:myapp/data/prayer_data.dart';
+import 'package:myapp/models/prayer.dart';
 import 'package:myapp/pages/blessing_page.dart';
-import 'package:myapp/pages/morning_prayer_page.dart';
-import 'package:myapp/pages/nine_oclock_prayer_page.dart';
-import 'package:myapp/pages/six_oclock_prayer_page.dart';
-import 'package:myapp/pages/three_oclock_prayer_page.dart';
-import 'package:myapp/pages/twelve_oclock_prayer_page.dart';
-import 'package:myapp/pages/twenty_one_oclock_prayer_page.dart';
-import 'package:myapp/pages/twenty_three_oclock_prayer_page.dart';
-
-class PrayerInfo {
-  TimeOfDay time;
-  final String title;
-  final Widget page;
-  final bool isAdjustable;
-
-  PrayerInfo({
-    required this.time,
-    required this.title,
-    required this.page,
-    this.isAdjustable = false,
-  });
-}
+import 'package:myapp/pages/prayer_detail_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,96 +12,65 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late List<PrayerInfo> prayerList;
+  late List<Prayer> _prayers;
 
   @override
   void initState() {
     super.initState();
-    prayerList = [
-      PrayerInfo(
-        time: const TimeOfDay(hour: 6, minute: 0),
-        title: 'ლოცვები დილის 6 საათზე',
-        page: const MorningPrayerPage(),
-        isAdjustable: true,
-      ),
-      PrayerInfo(
-        time: const TimeOfDay(hour: 9, minute: 0),
-        title: 'ლოცვები დილის 9 საათზე',
-        page: const NineOClockPrayerPage(),
-      ),
-      PrayerInfo(
-        time: const TimeOfDay(hour: 12, minute: 0),
-        title: 'ლოცვები დღის 12 საათზე',
-        page: const TwelveOClockPrayerPage(),
-      ),
-      PrayerInfo(
-        time: const TimeOfDay(hour: 15, minute: 0),
-        title: 'ლოცვები დღის 3 საათზე',
-        page: const ThreeOClockPrayerPage(),
-      ),
-      PrayerInfo(
-        time: const TimeOfDay(hour: 18, minute: 0),
-        title: 'ლოცვები საღამოს 6 საათზე',
-        page: const SixOClockPrayerPage(),
-      ),
-      PrayerInfo(
-        time: const TimeOfDay(hour: 21, minute: 0),
-        title: 'ლოცვები საღამოს 9 საათზე',
-        page: const TwentyOneOClockPrayerPage(),
-      ),
-      PrayerInfo(
-        time: const TimeOfDay(hour: 23, minute: 0),
-        title: 'ლოცვები ძილის წინ',
-        page: const TwentyThreeOClockPrayerPage(),
-        isAdjustable: true,
-      ),
-    ];
+    _prayers = List.from(prayerList);
   }
 
-  void _changeTime(int index, int hour) {
+  void _updatePrayerTime(int index, int hourChange) {
     setState(() {
-      final currentTime = prayerList[index].time;
-      // Prevent going before 5 AM and after 8 AM for morning prayer
-      if (index == 0 && (currentTime.hour + hour < 5 || currentTime.hour + hour > 8)) {
-        return;
+      final prayer = _prayers[index];
+      final timeParts = prayer.time.split(':');
+      int hour = int.parse(timeParts[0]);
+
+      int newHour = hour;
+
+      if (index == 0) { // First prayer
+        newHour = (hour + hourChange);
+        if (newHour < 6) newHour = 8;
+        if (newHour > 8) newHour = 6;
+      } else if (index == _prayers.length - 1) { // Last prayer
+        newHour = (hour + hourChange);
+        if (newHour < 22) newHour = 23;
+        if (newHour > 23) newHour = 22;
       }
-      // Prevent going before 10 PM and after 11 PM for night prayer
-      if (index == prayerList.length - 1 && (currentTime.hour + hour < 22 || currentTime.hour + hour > 23)) {
-        return;
-      }
-      
-      final newTime = currentTime.replacing(hour: currentTime.hour + hour);
-      prayerList[index].time = newTime;
+
+      _prayers[index] = prayer.copyWith(
+        time: '${newHour.toString().padLeft(2, '0')}:00',
+        imagePath: 'assets/images/${newHour.toString().padLeft(2, '0')}.jpg',
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
+    String formatTime(String time24) {
+      final parts = time24.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      final period = hour < 12 ? 'AM' : 'PM';
+      final hour12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      return '$hour12:${minute.toString().padLeft(2, '0')} $period';
+    }
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('7 ლოცვა'),
-        actions: [
-          IconButton(
-            icon: Icon(themeProvider.themeMode == ThemeMode.dark
-                ? Icons.light_mode
-                : Icons.dark_mode),
-            onPressed: () => themeProvider.toggleTheme(),
-            tooltip: 'Toggle Theme',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {},
-            tooltip: 'Refresh',
-          ),
-        ],
+        title: const Text(
+          '7 locva', 
+          style: TextStyle(fontFamily: 'Eka', color: Colors.black), // Set text color to black
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            ElevatedButton.icon(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
+            child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -130,85 +79,121 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               icon: const Icon(Icons.video_library),
               label: const Text('პატრიარქის კურთხევა'),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: prayerList.length,
-                itemBuilder: (context, index) {
-                  return _buildPrayerCard(
-                    context,
-                    prayerList[index],
-                    index,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPrayerCard(BuildContext context, PrayerInfo prayerInfo, int index) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => prayerInfo.page,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.alarm, size: 40),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        prayerInfo.time.format(context),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      Text(prayerInfo.title),
-                    ],
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.arrow_forward_ios),
-                ],
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.deepPurple,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
-          if (prayerInfo.isAdjustable) ...[
-            const Divider(height: 1),
-            Padding(
+          Expanded(
+            child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => _changeTime(index, -1),
+              itemCount: _prayers.length,
+              itemBuilder: (context, index) {
+                final prayer = _prayers[index];
+                final time = formatTime(prayer.time);
+
+                bool isFirst = index == 0;
+                bool isLast = index == _prayers.length - 1;
+                bool showTimeChange = isFirst || isLast;
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  elevation: 1,
+                  shadowColor: Colors.black12,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const Text('დროის შეცვლა'),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    onPressed: () => _changeTime(index, 1),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PrayerDetailPage(
+                            imagePath: prayer.imagePath,
+                            title: prayer.title,
+                            prayerText: prayer.prayerText,
+                          ),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.alarm, color: Theme.of(context).primaryColor, size: 28),
+                              const SizedBox(width: 16.0),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      time,
+                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      prayer.title,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: Colors.grey[600],
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                        if (showTimeChange)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.remove, color: Colors.grey[600]),
+                                    onPressed: () => _updatePrayerTime(index, -1),
+                                  ),
+                                  Text(
+                                    'დროის შეცვლა',
+                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                          color: Colors.grey[700],
+                                        ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.add, color: Colors.grey[600]),
+                                    onPressed: () => _updatePrayerTime(index, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          ]
+          ),
         ],
       ),
     );
