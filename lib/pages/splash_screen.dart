@@ -1,10 +1,11 @@
 
 import 'dart:async';
+import 'dart:io'; // Import for Platform check
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/controllers/settings_controller.dart';
-import 'package:myapp/pages/home_screen.dart';
 import 'package:myapp/services/notification_controller.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -18,53 +19,91 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Start the initialization process after the first frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAndNavigate();
     });
   }
 
+  Future<void> _requestPermissions() async {
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed) {
+      await AwesomeNotifications().requestPermissionToSendNotifications(
+        channelKey: 'alarm_channel',
+        permissions: [
+          NotificationPermission.Alert,
+          NotificationPermission.Sound,
+          NotificationPermission.Badge,
+          NotificationPermission.Vibration,
+          NotificationPermission.CriticalAlert,
+        ],
+      );
+    }
+
+    if (Platform.isAndroid) {
+      if (await Permission.systemAlertWindow.isDenied) {
+        await Permission.systemAlertWindow.request();
+      }
+      if (await Permission.scheduleExactAlarm.isDenied) {
+        await Permission.scheduleExactAlarm.request();
+      }
+    }
+  }
+
   Future<void> _initializeAndNavigate() async {
-    // Initialize Awesome Notifications
-    await AwesomeNotifications().initialize(
-      'resource://drawable/res_app_icon',
-      [
-        NotificationChannel(
-          channelKey: 'alarm_channel',
-          channelName: 'Alarm Notifications',
-          channelDescription: 'Notification channel for prayer alarms',
-          defaultColor: const Color(0xFF7B4DFF),
-          ledColor: Colors.white,
-          importance: NotificationImportance.Max,
-          channelShowBadge: true,
-          soundSource: 'resource://raw/custom_sound',
-          criticalAlerts: true,
-          locked: true,
-        ),
-      ],
-      // For production apps, it's recommended to set debug to false
-      debug: true,
-    );
+    // Storing context-dependent objects before async operations.
+    final settingsController = context.read<SettingsController>();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
-    // Set notification listeners
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: NotificationController.onActionReceivedMethod,
-      onNotificationCreatedMethod: NotificationController.onNotificationCreatedMethod,
-      onNotificationDisplayedMethod: NotificationController.onNotificationDisplayedMethod,
-      onDismissActionReceivedMethod: NotificationController.onDismissActionReceivedMethod,
-    );
+    try {
+      await _requestPermissions();
 
-    // Load app settings
-    await context.read<SettingsController>().loadSettings();
+      await AwesomeNotifications().initialize(
+        'resource://drawable/res_app_icon',
+        [
+          NotificationChannel(
+            channelKey: 'alarm_channel',
+            channelName: 'Alarm Notifications',
+            channelDescription: 'Notification channel for prayer alarms',
+            defaultColor: const Color(0xFF7B4DFF),
+            ledColor: Colors.white,
+            importance: NotificationImportance.Max,
+            channelShowBadge: true,
+            soundSource: 'resource://raw/custom_sound',
+            criticalAlerts: true,
+            locked: true,
+            defaultRingtoneType: DefaultRingtoneType.Alarm,
+            defaultPrivacy: NotificationPrivacy.Public,
+          ),
+        ],
+        debug: true,
+      );
 
-    // Check if the widget is still mounted before navigating
-    if (!mounted) return;
+      AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod:
+            NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod:
+            NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod:
+            NotificationController.onDismissActionReceivedMethod,
+      );
 
-    // Navigate to the HomeScreen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+      await settingsController.loadSettings();
+
+      if (!mounted) return;
+
+      navigator.pushReplacementNamed('/home');
+
+    } catch (e) {
+      debugPrint('Error during initialization: $e');
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text('Initialization failed: $e')),
+      );
+      navigator.pushReplacementNamed('/home');
+    }
   }
 
   @override
@@ -76,9 +115,13 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             const Icon(Icons.church, size: 100),
             const SizedBox(height: 20),
-            const Text(
-              'იტვირთება...',
-              style: TextStyle(fontSize: 18, fontFamily: 'BpgNinoMtavruli'),
+            AnimatedOpacity(
+              opacity: 1.0,
+              duration: const Duration(seconds: 1),
+              child: const Text(
+                'იტვირთება...',
+                style: TextStyle(fontSize: 18, fontFamily: 'BpgNinoMtavruli'),
+              ),
             ),
             const SizedBox(height: 10),
             Padding(

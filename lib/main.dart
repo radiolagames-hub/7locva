@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:myapp/pages/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/alarm_provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
@@ -10,20 +11,14 @@ import 'package:myapp/pages/splash_screen.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  // EnsureInitialized is required to ensure that the Flutter engine is initialized
-  // before calling runApp.
   WidgetsFlutterBinding.ensureInitialized();
 
-  // The SettingsController is initialized here, but loadSettings has been moved
-  // to the SplashScreen.
   final settingsController = SettingsController(SettingsService());
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AlarmProvider()),
-        // The settingsController is passed to the Provider so that it is available
-        // to other parts of the app.
         ChangeNotifierProvider.value(value: settingsController),
       ],
       child: const MyApp(),
@@ -38,7 +33,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SettingsController>(
       builder: (context, settingsController, child) {
-        // Themes and other visual parameters remain unchanged.
         final TextTheme appTextTheme = TextTheme(
           displayLarge: const TextStyle(
               fontFamily: 'BpgNinoMtavruli',
@@ -171,9 +165,10 @@ class MyApp extends StatelessWidget {
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: settingsController.themeMode,
-          // The first page of the app is the SplashScreen.
-          home: const SplashScreen(),
+          initialRoute: '/',
           routes: {
+            '/': (context) => const SplashScreen(),
+            '/home': (context) => const HomeScreen(),
             '/alarm': (context) {
               final int alarmId =
                   ModalRoute.of(context)!.settings.arguments as int;
