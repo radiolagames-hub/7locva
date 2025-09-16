@@ -10,48 +10,64 @@ import 'package:myapp/pages/splash_screen.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:myapp/pages/test_reminder_page.dart';
+import 'dart:developer' as developer;
 
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @pragma('vm:entry-point')
 void showTestNotification() {
-  AwesomeNotifications().createNotification(
-    content: NotificationContent(
-      id: 123,
-      channelKey: 'basic_channel',
-      title: 'სატესტო შეტყობინება',
-      body: 'ეს არის სატესტო შეტყობინება.',
-      fullScreenIntent: true,
-      autoDismissible: false,
-      backgroundColor: Colors.red,
-      payload: {'screen': 'test_reminder'}, 
-    ),
-  );
+  try {
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: 123,
+        channelKey: 'basic_channel',
+        title: 'სატესტო შეტყობინება',
+        body: 'ეს არის სატესტო შეტყობინება.',
+        fullScreenIntent: true,
+        autoDismissible: false,
+        backgroundColor: Colors.red,
+        payload: {'screen': 'test_reminder'}, 
+      ),
+    );
+  } catch (e) {
+    developer.log('Error creating test notification: $e', name: 'main');
+  }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AndroidAlarmManager.initialize();
-  AwesomeNotifications().initialize(
-    null,
-    [
-      NotificationChannel(
-        channelKey: 'basic_channel',
-        channelName: 'Basic notifications',
-        channelDescription: 'Notification channel for basic tests',
-        defaultColor: const Color(0xFF9D50DD),
-        ledColor: Colors.white,
-        importance: NotificationImportance.Max,
-        channelShowBadge: true,
-        locked: true,
-        defaultRingtoneType: DefaultRingtoneType.Notification,
-      )
-    ],
-    debug: true,
-  );
+  
+  try {
+    await AwesomeNotifications().initialize(
+      null,
+      [
+        NotificationChannel(
+          channelKey: 'basic_channel',
+          channelName: 'Basic notifications',
+          channelDescription: 'Notification channel for basic tests',
+          defaultColor: const Color(0xFF9D50DD),
+          ledColor: Colors.white,
+          importance: NotificationImportance.Max,
+          channelShowBadge: true,
+          locked: true,
+          defaultRingtoneType: DefaultRingtoneType.Notification,
+        )
+      ],
+      debug: true,
+    );
+  } catch (e) {
+    developer.log('Error initializing notifications: $e', name: 'main');
+  }
 
   final settingsController = SettingsController(SettingsService());
+  
+  try {
+    await settingsController.loadSettings();
+  } catch (e) {
+    developer.log('Error loading settings: $e', name: 'main');
+  }
 
   runApp(
     MultiProvider(
@@ -69,13 +85,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: (ReceivedAction receivedAction) async {
-        if (receivedAction.payload != null && receivedAction.payload!['screen'] == 'test_reminder') {
-          navigatorKey.currentState?.pushNamed('/test_reminder');
-        }
-      },
-    );
+    try {
+      AwesomeNotifications().setListeners(
+        onActionReceivedMethod: (ReceivedAction receivedAction) async {
+          try {
+            if (receivedAction.payload != null && receivedAction.payload!['screen'] == 'test_reminder') {
+              navigatorKey.currentState?.pushNamed('/test_reminder');
+            }
+          } catch (e) {
+            developer.log('Error handling notification action: $e', name: 'main');
+          }
+        },
+      );
+    } catch (e) {
+      developer.log('Error setting notification listeners: $e', name: 'main');
+    }
+    
     return Consumer<SettingsController>(
       builder: (context, settingsController, child) {
         final TextTheme appTextTheme = TextTheme(

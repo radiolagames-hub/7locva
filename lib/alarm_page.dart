@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:myapp/providers/alarm_provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/pages/home_screen.dart';
+import 'dart:developer' as developer;
 
 class AlarmPage extends StatefulWidget {
   final int alarmId;
@@ -29,15 +30,25 @@ class _AlarmPageState extends State<AlarmPage> {
     final sound = Provider.of<SettingsController>(context, listen: false).sound;
     try {
       await _player.play(AssetSource("audio/$sound"), volume: 1.0);
-      _player.setReleaseMode(ReleaseMode.loop);
+      await _player.setReleaseMode(ReleaseMode.loop);
     } catch (e) {
-      print('Error playing sound: $e');
-      // Fallback to default system sound or show error
+      developer.log('Error playing sound: $e', name: 'alarm_page');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ხმის დაკვრა ვერ მოხერხდა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+          ),
+        );
+      }
     }
   }
 
   void _stopSound() {
-    _player.stop();
+    try {
+      _player.stop();
+    } catch (e) {
+      developer.log('Error stopping sound: $e', name: 'alarm_page');
+    }
   }
 
   void _readPrayer() {
@@ -52,7 +63,11 @@ class _AlarmPageState extends State<AlarmPage> {
 
   void _snooze(int minutes) {
     _stopSound();
-    Provider.of<AlarmProvider>(context, listen: false).snoozeAlarm(widget.alarmId, minutes);
+    try {
+      Provider.of<AlarmProvider>(context, listen: false).snoozeAlarm(widget.alarmId, minutes);
+    } catch (e) {
+      developer.log('Error snoozing alarm: $e', name: 'alarm_page');
+    }
     Navigator.pop(context);
   }
 
@@ -64,6 +79,7 @@ class _AlarmPageState extends State<AlarmPage> {
   @override
   void dispose() {
     _stopSound();
+    _player.dispose();
     super.dispose();
   }
 

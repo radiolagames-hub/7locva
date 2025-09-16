@@ -7,6 +7,7 @@ import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/services/notification_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer' as developer;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,27 +26,31 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
-    if (!isAllowed) {
-      await AwesomeNotifications().requestPermissionToSendNotifications(
-        channelKey: 'alarm_channel',
-        permissions: [
-          NotificationPermission.Alert,
-          NotificationPermission.Sound,
-          NotificationPermission.Badge,
-          NotificationPermission.Vibration,
-          NotificationPermission.CriticalAlert,
-        ],
-      );
-    }
+    try {
+      bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+      if (!isAllowed) {
+        await AwesomeNotifications().requestPermissionToSendNotifications(
+          channelKey: 'alarm_channel',
+          permissions: [
+            NotificationPermission.Alert,
+            NotificationPermission.Sound,
+            NotificationPermission.Badge,
+            NotificationPermission.Vibration,
+            NotificationPermission.CriticalAlert,
+          ],
+        );
+      }
 
-    if (Platform.isAndroid) {
-      if (await Permission.systemAlertWindow.isDenied) {
-        await Permission.systemAlertWindow.request();
+      if (Platform.isAndroid) {
+        if (await Permission.systemAlertWindow.isDenied) {
+          await Permission.systemAlertWindow.request();
+        }
+        if (await Permission.scheduleExactAlarm.isDenied) {
+          await Permission.scheduleExactAlarm.request();
+        }
       }
-      if (await Permission.scheduleExactAlarm.isDenied) {
-        await Permission.scheduleExactAlarm.request();
-      }
+    } catch (e) {
+      developer.log('Error requesting permissions: $e', name: 'splash_screen');
     }
   }
 
@@ -58,36 +63,44 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       await _requestPermissions();
 
-      await AwesomeNotifications().initialize(
-        'resource://drawable/res_app_icon',
-        [
-          NotificationChannel(
-            channelKey: 'alarm_channel',
-            channelName: 'Alarm Notifications',
-            channelDescription: 'Notification channel for prayer alarms',
-            defaultColor: const Color(0xFF7B4DFF),
-            ledColor: Colors.white,
-            importance: NotificationImportance.Max,
-            channelShowBadge: true,
-            soundSource: 'resource://raw/custom_sound',
-            criticalAlerts: true,
-            locked: true,
-            defaultRingtoneType: DefaultRingtoneType.Alarm,
-            defaultPrivacy: NotificationPrivacy.Public,
-          ),
-        ],
-        debug: false, // Set to false for production
-      );
+      try {
+        await AwesomeNotifications().initialize(
+          null, // Use default app icon
+          [
+            NotificationChannel(
+              channelKey: 'alarm_channel',
+              channelName: 'Alarm Notifications',
+              channelDescription: 'Notification channel for prayer alarms',
+              defaultColor: const Color(0xFF7B4DFF),
+              ledColor: Colors.white,
+              importance: NotificationImportance.Max,
+              channelShowBadge: true,
+              criticalAlerts: true,
+              locked: true,
+              defaultRingtoneType: DefaultRingtoneType.Alarm,
+              defaultPrivacy: NotificationPrivacy.Public,
+            ),
+          ],
+          debug: false, // Set to false for production
+        );
+      } catch (e) {
+        developer.log('Error initializing notifications: $e', name: 'splash_screen');
+        // Continue without notifications if initialization fails
+      }
 
-      AwesomeNotifications().setListeners(
-        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
-        onNotificationCreatedMethod:
-            NotificationController.onNotificationCreatedMethod,
-        onNotificationDisplayedMethod:
-            NotificationController.onNotificationDisplayedMethod,
-        onDismissActionReceivedMethod:
-            NotificationController.onDismissActionReceivedMethod,
-      );
+      try {
+        AwesomeNotifications().setListeners(
+          onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+          onNotificationCreatedMethod:
+              NotificationController.onNotificationCreatedMethod,
+          onNotificationDisplayedMethod:
+              NotificationController.onNotificationDisplayedMethod,
+          onDismissActionReceivedMethod:
+              NotificationController.onDismissActionReceivedMethod,
+        );
+      } catch (e) {
+        developer.log('Error setting notification listeners: $e', name: 'splash_screen');
+      }
 
       await settingsController.loadSettings();
 
@@ -96,11 +109,16 @@ class _SplashScreenState extends State<SplashScreen> {
       navigator.pushReplacementNamed('/home');
 
     } catch (e) {
-      debugPrint('Error during initialization: $e');
+      developer.log('Error during initialization: $e', name: 'splash_screen');
       if (!mounted) return;
 
       messenger.showSnackBar(
-        SnackBar(content: Text('Initialization failed: $e')),
+        const SnackBar(
+          content: Text(
+            'ინიციალიზაცია ვერ მოხერხდა. აპლიკაცია გაგრძელდება ძირითადი ფუნქციებით.',
+            style: TextStyle(fontFamily: 'BpgNinoMtavruli'),
+          ),
+        ),
       );
       navigator.pushReplacementNamed('/home');
     }

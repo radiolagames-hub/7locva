@@ -11,6 +11,7 @@ import 'package:myapp/widgets/app_bottom_navigation.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer' as developer;
 
 class HomeScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -64,7 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 TextButton(
                   child: const Text('პარამეტრების გახსნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
                   onPressed: () {
-                    openAppSettings();
+                    try {
+                      openAppSettings();
+                    } catch (e) {
+                      developer.log('Error opening app settings: $e', name: 'home_screen');
+                    }
                     Navigator.of(context).pop();
                   },
                 ),
@@ -74,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      print('Error requesting permissions: $e');
+      developer.log('Error requesting permissions: $e', name: 'home_screen');
     }
   }
 
@@ -93,6 +98,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       final prayer = _prayers[index];
       final timeParts = prayer.time.split(':');
+      
+      if (timeParts.length != 2) {
+        developer.log('Invalid time format: ${prayer.time}', name: 'home_screen');
+        return;
+      }
+      
       int hour = int.parse(timeParts[0]);
 
       int newHour = hour;
@@ -113,9 +124,20 @@ class _HomeScreenState extends State<HomeScreen> {
         time: newTime,
         imagePath: 'assets/images/${newHour.toString().padLeft(2, '0')}.jpg',
       );
-      // Update the alarm
-      Provider.of<AlarmProvider>(context, listen: false)
-          .updateSingleAlarm(index, newTime);
+      
+      try {
+        Provider.of<AlarmProvider>(context, listen: false)
+            .updateSingleAlarm(index, newTime);
+      } catch (e) {
+        developer.log('Error updating alarm: $e', name: 'home_screen');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ალარმის განახლება ვერ მოხერხდა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+            ),
+          );
+        }
+      }
     });
   }
 

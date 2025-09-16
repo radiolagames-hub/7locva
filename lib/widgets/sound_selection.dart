@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 class SoundSelection extends StatefulWidget {
   const SoundSelection({super.key});
@@ -44,13 +45,12 @@ class _SoundSelectionState extends State<SoundSelection> {
 
   void _playSound(String? sound) {
     try {
-      _audioPlayer.stop();
+      _audioPlayer.stop(); 
       if (sound != null) {
         _audioPlayer.play(AssetSource('audio/$sound'));
       }
     } catch (e) {
-      print('Error playing preview sound: $e');
-      // Show user-friendly error message
+      developer.log('Error playing preview sound: $e', name: 'sound_selection');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -94,7 +94,9 @@ class _SoundSelectionState extends State<SoundSelection> {
             IconButton(
               icon: const Icon(Icons.play_circle_outline),
               onPressed: () {
-                _playSound(_selectedSound);
+                if (_selectedSound != null) {
+                  _playSound(_selectedSound);
+                }
               },
               color: theme.colorScheme.secondary,
             ),

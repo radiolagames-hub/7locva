@@ -6,6 +6,7 @@ import 'package:myapp/widgets/sound_selection.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:myapp/main.dart';
+import 'dart:developer' as developer;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -55,13 +56,32 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildTestReminderButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        AndroidAlarmManager.oneShot(
-          const Duration(seconds: 5),
-          12345, // Unique ID for the alarm
-          showTestNotification, // The top-level function to be executed
-          exact: true,
-          wakeup: true,
-        );
+        try {
+          AndroidAlarmManager.oneShot(
+            const Duration(seconds: 5),
+            12345, // Unique ID for the alarm
+            showTestNotification, // The top-level function to be executed
+            exact: true,
+            wakeup: true,
+          );
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('სატესტო შეხსენება დაიგეგმა 5 წამში', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+              ),
+            );
+          }
+        } catch (e) {
+          developer.log('Error scheduling test reminder: $e', name: 'settings_page');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('სატესტო შეხსენების დაგეგმვა ვერ მოხერხდა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+              ),
+            );
+          }
+        }
       },
       child: const Text('სატესტო შეხსენება'),
     );
