@@ -14,6 +14,10 @@
 
 # Rules for Google Play Core library
 -keep class com.google.android.play.core.** { *; }
+-keep interface com.google.android.play.core.** { *; }
+
+# Keep Flutter SplitCompat Application
+-keep class io.flutter.embedding.android.FlutterPlayStoreSplitApplication { *; }
 
 # Broader rules for common Flutter plugins and AndroidX libraries
 -keep class androidx.core.app.CoreComponentFactory { *; }
@@ -29,3 +33,10 @@
 -dontwarn com.google.android.play.core.splitinstall.**
 -keep class com.google.android.play.core.splitinstall.** { *; }
 -keep class com.google.android.play.core.splitinstall.testing.** { *; }
+
+# More comprehensive Play Core rules
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallManager
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
+-dontwarn com.google.android.play.core.splitinstall.model.SplitInstallErrorCode
+-dontwarn com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus

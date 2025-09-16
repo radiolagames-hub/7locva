@@ -11,8 +11,6 @@
   # Sets environment variables in the workspace
   env = {};
   idx = {
-    # Add the diskSize property inside the idx block
-    vms.default.diskSize = 50;
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       "Dart-Code.flutter"

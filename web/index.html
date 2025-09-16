@@ -1,20 +1,8 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -31,8 +19,73 @@
 
   <title>myapp</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    @font-face {
+      font-family: 'BpgNinoMtavruli';
+      src: url('assets/fonts/bpg_nino_mtavruli_normal.otf') format('opentype');
+    }
+    @font-face {
+      font-family: 'Eka';
+      src: url('assets/fonts/eka.ttf') format('truetype');
+    }
+    body {
+      margin: 0;
+      font-family: 'Eka', sans-serif;
+      background-image: url('assets/images/09.jpg');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+    .container {
+      text-align: center;
+      padding: 50px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-width: 500px;
+      margin: 20px;
+    }
+    h1 {
+      font-family: 'BpgNinoMtavruli', sans-serif;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    p {
+      font-family: 'Eka', sans-serif;
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      font-weight: 300;
+    }
+    .download-button {
+      display: inline-block;
+      padding: 15px 40px;
+      background-color: #007BFF;
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 1.1em;
+      transition: background-color 0.3s, transform 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+      font-family: 'BpgNinoMtavruli', sans-serif;
+    }
+    .download-button:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
+  </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <div class="container">
+    <h1>გადმოიწერე ჩვენი აპლიკაცია</h1>
+    <p>sauketeso gamocdilebistvis, daainstaliret chveni android aplikacia.</p>
+    <a href="app-release.apk" download class="download-button">გადმოწერა</a>
+  </div>
 </body>
 </html>
