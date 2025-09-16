@@ -4,9 +4,24 @@ import 'package:provider/provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/widgets/sound_selection.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:myapp/main.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<SettingsController>(context, listen: false).loadSettings();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +37,8 @@ class SettingsPage extends StatelessWidget {
           _buildSectionTitle(context, 'შეხსენებები'),
           _buildNotificationToggle(context, settingsController, theme),
           const SizedBox(height: 16),
+          _buildTestReminderButton(context),
+          const SizedBox(height: 16),
           _buildSectionTitle(context, 'შეხსენების ხმა'),
           const SoundSelection(),
           const SizedBox(height: 16),
@@ -32,6 +49,21 @@ class SettingsPage extends StatelessWidget {
           _buildFontSizeSlider(context, settingsController, theme),
         ],
       ),
+    );
+  }
+
+  Widget _buildTestReminderButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        AndroidAlarmManager.oneShot(
+          const Duration(seconds: 5),
+          12345, // Unique ID for the alarm
+          showTestNotification, // The top-level function to be executed
+          exact: true,
+          wakeup: true,
+        );
+      },
+      child: const Text('სატესტო შეხსენება'),
     );
   }
 
@@ -54,7 +86,8 @@ class SettingsPage extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SwitchListTile(
-        title: Text('შეხსენებების ჩართვა', style: theme.textTheme.bodyLarge),
+        title: Text('აპლიკაციის ზემოდან გადადება', style: theme.textTheme.bodyLarge),
+        subtitle: Text('საჭიროა შეხსენებების გამოსაჩენად', style: theme.textTheme.bodySmall),
         value: controller.notificationsEnabled,
         onChanged: (bool value) async {
           if (value) {

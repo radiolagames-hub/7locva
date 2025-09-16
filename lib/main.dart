@@ -7,11 +7,49 @@ import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/services/settings_service.dart';
 import 'package:myapp/alarm_page.dart';
 import 'package:myapp/pages/splash_screen.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:myapp/pages/test_reminder_page.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+@pragma('vm:entry-point')
+void showTestNotification() {
+  AwesomeNotifications().createNotification(
+    content: NotificationContent(
+      id: 123,
+      channelKey: 'basic_channel',
+      title: 'სატესტო შეტყობინება',
+      body: 'ეს არის სატესტო შეტყობინება.',
+      fullScreenIntent: true,
+      autoDismissible: false,
+      backgroundColor: Colors.red,
+      payload: {'screen': 'test_reminder'}, 
+    ),
+  );
+}
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AndroidAlarmManager.initialize();
+  AwesomeNotifications().initialize(
+    null,
+    [
+      NotificationChannel(
+        channelKey: 'basic_channel',
+        channelName: 'Basic notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: const Color(0xFF9D50DD),
+        ledColor: Colors.white,
+        importance: NotificationImportance.Max,
+        channelShowBadge: true,
+        locked: true,
+        defaultRingtoneType: DefaultRingtoneType.Notification,
+      )
+    ],
+    debug: true,
+  );
 
   final settingsController = SettingsController(SettingsService());
 
@@ -31,6 +69,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AwesomeNotifications().setListeners(
+      onActionReceivedMethod: (ReceivedAction receivedAction) async {
+        if (receivedAction.payload != null && receivedAction.payload!['screen'] == 'test_reminder') {
+          navigatorKey.currentState?.pushNamed('/test_reminder');
+        }
+      },
+    );
     return Consumer<SettingsController>(
       builder: (context, settingsController, child) {
         final TextTheme appTextTheme = TextTheme(
@@ -174,6 +219,8 @@ class MyApp extends StatelessWidget {
                   ModalRoute.of(context)!.settings.arguments as int;
               return AlarmPage(alarmId: alarmId);
             },
+            '/test_reminder': (context) => const TestReminderPage(),
+
           },
           debugShowCheckedModeBanner: false,
         );
