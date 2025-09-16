@@ -37,6 +37,18 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="awesome_notifications_channels"
+            android:value="[{
+                'channelKey': 'alarm_channel',
+                'channelName': 'Alarm Notifications',
+                'channelDescription': 'Notifications for alarms',
+                'channelShowBadge': true,
+                'importance': 5,
+                'playSound': true,
+                'enableVibration': true,
+                'soundSource': 'resource://raw/res_alarm_sound'
+            }]" />
         <service
             android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
             android:permission="android.permission.BIND_JOB_SERVICE"
