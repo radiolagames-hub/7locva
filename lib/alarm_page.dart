@@ -27,8 +27,13 @@ class _AlarmPageState extends State<AlarmPage> {
 
   Future<void> _playSound() async {
     final sound = Provider.of<SettingsController>(context, listen: false).sound;
-    await _player.play(AssetSource("audio/$sound"), volume: 1.0);
-    _player.setReleaseMode(ReleaseMode.loop);
+    try {
+      await _player.play(AssetSource("audio/$sound"), volume: 1.0);
+      _player.setReleaseMode(ReleaseMode.loop);
+    } catch (e) {
+      print('Error playing sound: $e');
+      // Fallback to default system sound or show error
+    }
   }
 
   void _stopSound() {

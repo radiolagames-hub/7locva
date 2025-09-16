@@ -30,6 +30,7 @@ class NotificationController {
   /// Use this method to detect when the user taps on a notification or action button
   @pragma("vm:entry-point")
   static Future<void> onActionReceivedMethod(ReceivedAction receivedAction) async {
+    try {
     final payload = receivedAction.payload;
     if (payload == null || payload['prayerId'] == null) {
       return;
@@ -38,16 +39,21 @@ class NotificationController {
     final prayerId = int.parse(payload['prayerId']!);
 
     if (receivedAction.buttonKeyPressed == 'READ_PRAYER') {
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => AlarmPage(alarmId: prayerId),
-        ),
-      );
+        if (navigatorKey.currentState != null) {
+          navigatorKey.currentState!.push(
+            MaterialPageRoute(
+              builder: (context) => AlarmPage(alarmId: prayerId),
+            ),
+          );
+        }
     } else if (receivedAction.buttonKeyPressed == 'SNOOZE_ALARM') {
       final alarmProvider = AlarmProvider();
       await alarmProvider.snoozeAlarm(prayerId, 10);
     } else if (receivedAction.buttonKeyPressed == 'DISMISS_ALARM') {
       // No action needed, the notification is dismissed automatically
+    }
+    } catch (e) {
+      print('Error handling notification action: $e');
     }
   }
 }

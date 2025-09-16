@@ -25,37 +25,40 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeAndNavigate() async {
-    // Initialize Awesome Notifications
-    await AwesomeNotifications().initialize(
-      'resource://drawable/res_app_icon',
-      [
-        NotificationChannel(
-          channelKey: 'alarm_channel',
-          channelName: 'Alarm Notifications',
-          channelDescription: 'Notification channel for prayer alarms',
-          defaultColor: const Color(0xFF7B4DFF),
-          ledColor: Colors.white,
-          importance: NotificationImportance.Max,
-          channelShowBadge: true,
-          soundSource: 'resource://raw/custom_sound',
-          criticalAlerts: true,
-          locked: true,
-        ),
-      ],
-      // For production apps, it's recommended to set debug to false
-      debug: true,
-    );
+    try {
+      // Initialize Awesome Notifications
+      await AwesomeNotifications().initialize(
+        null, // Use default app icon
+        [
+          NotificationChannel(
+            channelKey: 'alarm_channel',
+            channelName: 'Alarm Notifications',
+            channelDescription: 'Notification channel for prayer alarms',
+            defaultColor: const Color(0xFF7B4DFF),
+            ledColor: Colors.white,
+            importance: NotificationImportance.Max,
+            channelShowBadge: true,
+            criticalAlerts: true,
+            locked: true,
+          ),
+        ],
+        debug: false, // Set to false for production
+      );
 
-    // Set notification listeners
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: NotificationController.onActionReceivedMethod,
-      onNotificationCreatedMethod: NotificationController.onNotificationCreatedMethod,
-      onNotificationDisplayedMethod: NotificationController.onNotificationDisplayedMethod,
-      onDismissActionReceivedMethod: NotificationController.onDismissActionReceivedMethod,
-    );
+      // Set notification listeners
+      AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod: NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod: NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod: NotificationController.onDismissActionReceivedMethod,
+      );
 
-    // Load app settings
-    await context.read<SettingsController>().loadSettings();
+      // Load app settings
+      await context.read<SettingsController>().loadSettings();
+    } catch (e) {
+      print('Error during initialization: $e');
+      // Continue to home screen even if some initialization fails
+    }
 
     // Check if the widget is still mounted before navigating
     if (!mounted) return;
