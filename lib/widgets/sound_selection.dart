@@ -43,9 +43,21 @@ class _SoundSelectionState extends State<SoundSelection> {
   }
 
   void _playSound(String? sound) {
-    _audioPlayer.stop();
-    if (sound != null) {
-      _audioPlayer.play(AssetSource('audio/$sound'));
+    try {
+      _audioPlayer.stop();
+      if (sound != null) {
+        _audioPlayer.play(AssetSource('audio/$sound'));
+      }
+    } catch (e) {
+      print('Error playing preview sound: $e');
+      // Show user-friendly error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ხმის ფაილი ვერ მოიძებნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+          ),
+        );
+      }
     }
   }
 

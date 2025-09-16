@@ -41,36 +41,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
-    if (!isAllowed) {
-      await AwesomeNotifications().requestPermissionToSendNotifications();
-    }
-
-    var status = await Permission.systemAlertWindow.status;
-    if (status.isDenied) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('ნებართვაა საჭირო', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-            content: const Text(
-                'აპლიკაციას სჭირდება ნებართვა, რათა სხვა აპლიკაციების თავზე გამოაჩინოს ლოცვის შეტყობინებები. გთხოვთ, ჩართოთ ეს ნებართვა აპლიკაციის პარამეტრებში.', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('გაუქმება', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              TextButton(
-                child: const Text('პარამეტრების გახსნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-                onPressed: () {
-                  openAppSettings();
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
+    try {
+      bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+      if (!isAllowed) {
+        await AwesomeNotifications().requestPermissionToSendNotifications();
       }
+
+      var status = await Permission.systemAlertWindow.status;
+      if (status.isDenied) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text('ნებართვაა საჭირო', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+              content: const Text(
+                  'აპლიკაციას სჭირდება ნებართვა, რათა სხვა აპლიკაციების თავზე გამოაჩინოს ლოცვის შეტყობინებები. გთხოვთ, ჩართოთ ეს ნებართვა აპლიკაციის პარამეტრებში.', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('გაუქმება', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                TextButton(
+                  child: const Text('პარამეტრების გახსნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+                  onPressed: () {
+                    openAppSettings();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error requesting permissions: $e');
     }
   }
 

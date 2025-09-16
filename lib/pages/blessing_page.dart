@@ -18,17 +18,22 @@ class _BlessingPageState extends State<BlessingPage> {
   @override
   void initState() {
     super.initState();
-    _controller1 = VideoPlayerController.asset('assets/videos/video1.mp4')
+    // Use placeholder videos or network URLs since local videos don't exist
+    _controller1 = VideoPlayerController.network('https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4')
       ..initialize().then((_) {
         if (mounted) {
           setState(() {});
         }
+      }).catchError((error) {
+        print('Error initializing video 1: $error');
       });
-    _controller2 = VideoPlayerController.asset('assets/videos/video2.mp4')
+    _controller2 = VideoPlayerController.network('https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4')
       ..initialize().then((_) {
         if (mounted) {
           setState(() {});
         }
+      }).catchError((error) {
+        print('Error initializing video 2: $error');
       });
   }
 
@@ -107,7 +112,19 @@ class _BlessingPageState extends State<BlessingPage> {
             ),
           )
         else
-          const Center(child: CircularProgressIndicator()),
+          Container(
+            height: 200,
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('ვიდეო იტვირთება...', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -5,46 +5,50 @@ import 'package:timezone/timezone.dart' as tz;
 
 class AlarmProvider with ChangeNotifier {
   Future<void> scheduleAlarms() async {
-    for (int i = 0; i < prayerList.length; i++) {
-      final prayer = prayerList[i];
-      final timeParts = prayer.time.split(':');
-      final hour = int.parse(timeParts[0]);
-      final minute = int.parse(timeParts[1]);
+    try {
+      for (int i = 0; i < prayerList.length; i++) {
+        final prayer = prayerList[i];
+        final timeParts = prayer.time.split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
 
-      await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-          id: i,
-          channelKey: 'alarm_channel',
-          title: prayer.title,
-          body: 'დააჭირეთ ლოცვის წასაკითხად',
-          wakeUpScreen: true,
-          fullScreenIntent: true,
-          category: NotificationCategory.Alarm,
-          payload: {'prayerId': i.toString()},
-        ),
-        actionButtons: [
-          NotificationActionButton(
-            key: 'READ_PRAYER',
-            label: 'წაკითხვა',
+        await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: i,
+            channelKey: 'alarm_channel',
+            title: prayer.title,
+            body: 'დააჭირეთ ლოცვის წასაკითხად',
+            wakeUpScreen: true,
+            fullScreenIntent: true,
+            category: NotificationCategory.Alarm,
+            payload: {'prayerId': i.toString()},
           ),
-          NotificationActionButton(
-            key: 'SNOOZE_ALARM',
-            label: 'გადადება',
+          actionButtons: [
+            NotificationActionButton(
+              key: 'READ_PRAYER',
+              label: 'წაკითხვა',
+            ),
+            NotificationActionButton(
+              key: 'SNOOZE_ALARM',
+              label: 'გადადება',
+            ),
+            NotificationActionButton(
+              key: 'DISMISS_ALARM',
+              label: 'დახურვა',
+              isDangerousOption: true,
+            ),
+          ],
+          schedule: NotificationCalendar(
+            hour: hour,
+            minute: minute,
+            second: 0,
+            millisecond: 0,
+            repeats: true,
           ),
-          NotificationActionButton(
-            key: 'DISMISS_ALARM',
-            label: 'დახურვა',
-            isDangerousOption: true,
-          ),
-        ],
-        schedule: NotificationCalendar(
-          hour: hour,
-          minute: minute,
-          second: 0,
-          millisecond: 0,
-          repeats: true,
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      print('Error scheduling alarms: $e');
     }
   }
 

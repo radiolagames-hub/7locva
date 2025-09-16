@@ -18,11 +18,17 @@ class SettingsController with ChangeNotifier {
   bool get notificationsEnabled => _notificationsEnabled;
 
   Future<void> loadSettings() async {
-    _themeMode = await _settingsService.getThemeMode();
-    _fontSize = await _settingsService.getFontSize();
-    _sound = await _settingsService.getSound();
-    _notificationsEnabled = await _settingsService.getNotificationsEnabled();
-    notifyListeners();
+    try {
+      _themeMode = await _settingsService.getThemeMode();
+      _fontSize = await _settingsService.getFontSize();
+      _sound = await _settingsService.getSound();
+      _notificationsEnabled = await _settingsService.getNotificationsEnabled();
+      notifyListeners();
+    } catch (e) {
+      print('Error loading settings: $e');
+      // Use default values if loading fails
+      notifyListeners();
+    }
   }
 
   Future<void> setThemeMode(ThemeMode? newThemeMode) async {

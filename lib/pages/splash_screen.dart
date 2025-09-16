@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
             defaultPrivacy: NotificationPrivacy.Public,
           ),
         ],
-        debug: true,
+        debug: false, // Set to false for production
       );
 
       AwesomeNotifications().setListeners(
