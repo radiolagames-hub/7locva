@@ -1,7 +1,11 @@
 
 import 'dart:async';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/pages/home_screen.dart';
+import 'package:myapp/services/notification_controller.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,28 +15,56 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  double _progress = 0.0;
-
   @override
   void initState() {
     super.initState();
-    _startLoading();
+    // Start the initialization process after the first frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAndNavigate();
+    });
   }
 
-  void _startLoading() {
-    Timer.periodic(const Duration(milliseconds: 30), (timer) {
-      setState(() {
-        if (_progress >= 1.0) {
-          timer.cancel();
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        } else {
-          _progress += 0.01;
-        }
-      });
-    });
+  Future<void> _initializeAndNavigate() async {
+    // Initialize Awesome Notifications
+    await AwesomeNotifications().initialize(
+      'resource://drawable/res_app_icon',
+      [
+        NotificationChannel(
+          channelKey: 'alarm_channel',
+          channelName: 'Alarm Notifications',
+          channelDescription: 'Notification channel for prayer alarms',
+          defaultColor: const Color(0xFF7B4DFF),
+          ledColor: Colors.white,
+          importance: NotificationImportance.Max,
+          channelShowBadge: true,
+          soundSource: 'resource://raw/custom_sound',
+          criticalAlerts: true,
+          locked: true,
+        ),
+      ],
+      // For production apps, it's recommended to set debug to false
+      debug: true,
+    );
+
+    // Set notification listeners
+    AwesomeNotifications().setListeners(
+      onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+      onNotificationCreatedMethod: NotificationController.onNotificationCreatedMethod,
+      onNotificationDisplayedMethod: NotificationController.onNotificationDisplayedMethod,
+      onDismissActionReceivedMethod: NotificationController.onDismissActionReceivedMethod,
+    );
+
+    // Load app settings
+    await context.read<SettingsController>().loadSettings();
+
+    // Check if the widget is still mounted before navigating
+    if (!mounted) return;
+
+    // Navigate to the HomeScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    );
   }
 
   @override
@@ -42,18 +74,16 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // You can replace this with your app's logo
             const Icon(Icons.church, size: 100),
             const SizedBox(height: 20),
-            Text(
-              'იტვირთება... ${(_progress * 100).toStringAsFixed(0)}%',
-              style: const TextStyle(fontSize: 18, fontFamily: 'BpgNinoMtavruli'),
+            const Text(
+              'იტვირთება...',
+              style: TextStyle(fontSize: 18, fontFamily: 'BpgNinoMtavruli'),
             ),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50.0),
               child: LinearProgressIndicator(
-                value: _progress,
                 backgroundColor: Colors.grey[300],
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
