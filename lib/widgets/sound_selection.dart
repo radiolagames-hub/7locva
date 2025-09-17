@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/controllers/settings_controller.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
 
 class SoundSelection extends StatefulWidget {
@@ -11,18 +12,21 @@ class SoundSelection extends StatefulWidget {
 }
 
 class _SoundSelectionState extends State<SoundSelection> {
-  String? _selectedSound;
-  late AudioPlayer _audioPlayer;
-  final Map<String, String> sounds = {
-    'მაღვიძარა': 'alarm.mp3',
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final Map<String, String> _sounds = {
     'ზარი': 'bell.mp3',
+    'მაღვიძარა': 'alarm.mp3',
   };
 
-  @override
-  void initState() {
-    super.initState();
-    _audioPlayer = AudioPlayer();
-    _loadSettings();
+  void _playSound(String soundFile) async {
+    if (_audioPlayer.state == PlayerState.playing) {
+      await _audioPlayer.stop();
+    }
+    try {
+      await _audioPlayer.play(AssetSource('audio/$soundFile'));
+    } catch (e) {
+      developer.log('Error playing sound: $e', name: 'sound_selection');
+    }
   }
 
   @override
@@ -31,76 +35,43 @@ class _SoundSelectionState extends State<SoundSelection> {
     super.dispose();
   }
 
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedSound = prefs.getString('notification_sound') ?? 'bell.mp3';
-    });
-  }
-
-  Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('notification_sound', _selectedSound!);
-  }
-
-  void _playSound(String? sound) {
-    try {
-      _audioPlayer.stop(); 
-      if (sound != null) {
-        _audioPlayer.play(AssetSource('audio/$sound'));
-      }
-    } catch (e) {
-      developer.log('Error playing preview sound: $e', name: 'sound_selection');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ხმის ფაილი ვერ მოიძებნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final settingsController = Provider.of<SettingsController>(context);
     final theme = Theme.of(context);
-
-    if (_selectedSound == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
 
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [
-            SegmentedButton<String>(
-              segments: sounds.entries.map((entry) {
-                return ButtonSegment<String>(
-                  value: entry.value,
-                  label: Text(entry.key, style: const TextStyle(fontFamily: 'BpgNinoMtavruli')),
-                );
-              }).toList(),
-              selected: <String>{_selectedSound!},
-              onSelectionChanged: (Set<String> newSelection) {
-                setState(() {
-                  _selectedSound = newSelection.first;
-                  _saveSettings();
-                });
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.play_circle_outline),
-              onPressed: () {
-                if (_selectedSound != null) {
-                  _playSound(_selectedSound);
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _sounds.entries.map((entry) {
+            final soundName = entry.key;
+            final soundFile = entry.value;
+            final isSelected = settingsController.sound == soundFile;
+
+            return RadioListTile<String>(
+              title: Text(soundName, style: theme.textTheme.bodyLarge),
+              value: soundFile,
+              groupValue: settingsController.sound,
+              onChanged: (String? value) {
+                if (value != null) {
+                  settingsController.setSound(value);
+                  _playSound(value);
                 }
               },
-              color: theme.colorScheme.secondary,
-            ),
-          ],
+              secondary: IconButton(
+                icon: Icon(
+                  Icons.play_circle_outline,
+                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+                onPressed: () => _playSound(soundFile),
+              ),
+              activeColor: theme.colorScheme.primary,
+            );
+          }).toList(),
         ),
       ),
     );

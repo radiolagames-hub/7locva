@@ -1,109 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:provider/provider.dart';
-import 'package:myapp/providers/alarm_provider.dart';
-import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/data/prayer_data.dart';
 import 'package:myapp/pages/prayer_detail_page.dart';
-import 'dart:developer' as developer;
+import 'package:myapp/providers/alarm_provider.dart';
+import 'package:provider/provider.dart';
 
-class AlarmPage extends StatefulWidget {
-  final int alarmId;
-  const AlarmPage({super.key, required this.alarmId});
+class AlarmScreen extends StatelessWidget {
+  final int prayerId;
 
-  @override
-  State<AlarmPage> createState() => _AlarmPageState();
-}
-
-class _AlarmPageState extends State<AlarmPage> {
-  late AudioPlayer _player;
-
-  @override
-  void initState() {
-    super.initState();
-    _player = AudioPlayer();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-       _playSound();
-    });
-  }
-
-  Future<void> _playSound() async {
-    final sound = Provider.of<SettingsController>(context, listen: false).sound;
-    try {
-      await _player.play(AssetSource("audio/$sound"), volume: 1.0);
-      await _player.setReleaseMode(ReleaseMode.loop);
-    } catch (e) {
-      developer.log('Error playing sound: $e', name: 'alarm_page');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ხმის დაკვრა ვერ მოხერხდა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-          ),
-        );
-      }
-    }
-  }
-
-  void _stopSound() {
-    try {
-      _player.stop();
-    } catch (e) {
-      developer.log('Error stopping sound: $e', name: 'alarm_page');
-    }
-  }
-
-  void _readPrayer() {
-    _stopSound();
-    final prayer = prayerList[widget.alarmId];
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PrayerDetailPage(
-          imagePath: prayer.imagePath,
-          title: prayer.title,
-          prayerText: prayer.prayerText,
-        ),
-      ),
-    );
-  }
-
-  void _snooze(int minutes) {
-    _stopSound();
-    try {
-      Provider.of<AlarmProvider>(context, listen: false).snoozeAlarm(widget.alarmId, minutes);
-    } catch (e) {
-      developer.log('Error snoozing alarm: $e', name: 'alarm_page');
-    }
-    Navigator.pop(context);
-  }
-
-  void _dismiss() {
-    _stopSound();
-    Navigator.pop(context);
-  }
-
-  @override
-  void dispose() {
-    _stopSound();
-    _player.dispose();
-    super.dispose();
-  }
-
-  String _getBackgroundImage() {
-    final prayer = prayerList[widget.alarmId];
-    return prayer.imagePath;
-  }
+  const AlarmScreen({super.key, required this.prayerId});
 
   @override
   Widget build(BuildContext context) {
-    final prayer = prayerList[widget.alarmId];
+    final prayer = prayerList[prayerId];
     final theme = Theme.of(context);
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(_getBackgroundImage()),
+            image: AssetImage(prayer.imagePath),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withAlpha(128),
@@ -119,7 +34,7 @@ class _AlarmPageState extends State<AlarmPage> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: _dismiss,
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
@@ -140,11 +55,12 @@ class _AlarmPageState extends State<AlarmPage> {
                     const SizedBox(height: 16),
                     Text(
                       prayer.time,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white70,
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 80),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -152,20 +68,31 @@ class _AlarmPageState extends State<AlarmPage> {
                         _buildSnoozeButton(context, '5 წუთით', 5),
                       ],
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 60),
                     ElevatedButton(
-                      onPressed: _readPrayer,
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PrayerDetailPage(
+                              prayerText: prayer.prayerText,
+                              title: prayer.title,
+                              imagePath: prayer.imagePath,
+                            ),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade400,
                         shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(32),
                         elevation: 8,
                         shadowColor: Colors.green.shade200.withAlpha(178),
                       ),
                       child: const Text(
                         'წაკითხვა',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 22,
                           fontFamily: 'BpgNinoMtavruli',
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -184,7 +111,10 @@ class _AlarmPageState extends State<AlarmPage> {
 
   Widget _buildSnoozeButton(BuildContext context, String label, int minutes) {
     return ElevatedButton(
-      onPressed: () => _snooze(minutes),
+      onPressed: () {
+        Provider.of<AlarmProvider>(context, listen: false).snoozeAlarm(prayerId, minutes);
+        Navigator.of(context).pop();
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,

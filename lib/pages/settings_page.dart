@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/widgets/sound_selection.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'package:myapp/main.dart';
-import 'dart:developer' as developer;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -31,15 +27,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      appBar: const CustomAppBar(title: 'პარამეტრები'),
+      appBar: const CustomAppBar(title: '7 locva'),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          _buildSectionTitle(context, 'შეხსენებები'),
-          _buildNotificationToggle(context, settingsController, theme),
-          const SizedBox(height: 16),
-          _buildTestReminderButton(context),
-          const SizedBox(height: 16),
           _buildSectionTitle(context, 'შეხსენების ხმა'),
           const SoundSelection(),
           const SizedBox(height: 16),
@@ -50,40 +41,6 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildFontSizeSlider(context, settingsController, theme),
         ],
       ),
-    );
-  }
-
-  Widget _buildTestReminderButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        try {
-          AndroidAlarmManager.oneShot(
-            const Duration(seconds: 5),
-            12345, // Unique ID for the alarm
-            showTestNotification, // The top-level function to be executed
-            exact: true,
-            wakeup: true,
-          );
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('სატესტო შეხსენება დაიგეგმა 5 წამში', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-              ),
-            );
-          }
-        } catch (e) {
-          developer.log('Error scheduling test reminder: $e', name: 'settings_page');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('სატესტო შეხსენების დაგეგმვა ვერ მოხერხდა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-              ),
-            );
-          }
-        }
-      },
-      child: const Text('სატესტო შეხსენება'),
     );
   }
 
@@ -100,40 +57,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildNotificationToggle(
-      BuildContext context, SettingsController controller, ThemeData theme) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: SwitchListTile(
-        title: Text('აპლიკაციის ზემოდან გადადება', style: theme.textTheme.bodyLarge),
-        subtitle: Text('საჭიროა შეხსენებების გამოსაჩენად', style: theme.textTheme.bodySmall),
-        value: controller.notificationsEnabled,
-        onChanged: (bool value) async {
-          if (value) {
-            final status = await Permission.systemAlertWindow.request();
-            if (status.isGranted) {
-              controller.setNotificationsEnabled(value);
-            } else {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'ნებართვა მიუღებელია. ვიჯეტს ეს ნებართვა სჭირდება ფუნქციონირებისთვის.',
-                      style: TextStyle(fontFamily: 'BpgNinoMtavruli'),
-                    ),
-                  ),
-                );
-              }
-            }
-          } else {
-            controller.setNotificationsEnabled(value);
-          }
-        },
-      ),
-    );
-  }
-
   Widget _buildThemeSelector(
       BuildContext context, SettingsController controller, ThemeData theme) {
     return Card(
@@ -144,11 +67,17 @@ class _SettingsPageState extends State<SettingsPage> {
         child: SegmentedButton<ThemeMode>(
           segments: const <ButtonSegment<ThemeMode>>[
             ButtonSegment<ThemeMode>(
-                value: ThemeMode.light, label: Text('Light'), icon: Icon(Icons.light_mode)),
+                value: ThemeMode.light,
+                label: Text('Light'),
+                icon: Icon(Icons.light_mode)),
             ButtonSegment<ThemeMode>(
-                value: ThemeMode.dark, label: Text('Dark'), icon: Icon(Icons.dark_mode)),
+                value: ThemeMode.dark,
+                label: Text('Dark'),
+                icon: Icon(Icons.dark_mode)),
             ButtonSegment<ThemeMode>(
-                value: ThemeMode.system, label: Text('System'), icon: Icon(Icons.auto_mode)),
+                value: ThemeMode.system,
+                label: Text('System'),
+                icon: Icon(Icons.auto_mode)),
           ],
           selected: <ThemeMode>{controller.themeMode},
           onSelectionChanged: (Set<ThemeMode> newSelection) {

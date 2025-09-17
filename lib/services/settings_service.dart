@@ -1,12 +1,12 @@
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
 class SettingsService {
   static const String _themeModeKey = 'themeMode';
   static const String _fontSizeKey = 'fontSize';
   static const String _soundKey = 'sound'; // Key for storing the sound
-  static const String _notificationsEnabledKey = 'notificationsEnabled';
 
   Future<ThemeMode> getThemeMode() async {
     try {
@@ -16,7 +16,7 @@ class SettingsService {
         return ThemeMode.values[themeModeIndex];
       }
     } catch (e) {
-      print('Error getting theme mode: $e');
+      developer.log('Error getting theme mode: $e', name: 'settings_service');
     }
     return ThemeMode.system; // Default to system theme
   }
@@ -26,7 +26,7 @@ class SettingsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_themeModeKey, themeMode.index);
     } catch (e) {
-      print('Error setting theme mode: $e');
+      developer.log('Error setting theme mode: $e', name: 'settings_service');
     }
   }
 
@@ -35,7 +35,7 @@ class SettingsService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getDouble(_fontSizeKey) ?? 16.0;
     } catch (e) {
-      print('Error getting font size: $e');
+      developer.log('Error getting font size: $e', name: 'settings_service');
       return 16.0;
     }
   }
@@ -45,7 +45,7 @@ class SettingsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setDouble(_fontSizeKey, fontSize);
     } catch (e) {
-      print('Error setting font size: $e');
+      developer.log('Error setting font size: $e', name: 'settings_service');
     }
   }
 
@@ -55,7 +55,7 @@ class SettingsService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_soundKey) ?? 'bell.mp3'; // Default to bell.mp3
     } catch (e) {
-      print('Error getting sound: $e');
+      developer.log('Error getting sound: $e', name: 'settings_service');
       return 'bell.mp3';
     }
   }
@@ -66,26 +66,7 @@ class SettingsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_soundKey, sound);
     } catch (e) {
-      print('Error setting sound: $e');
-    }
-  }
-
-  Future<bool> getNotificationsEnabled() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool(_notificationsEnabledKey) ?? false;
-    } catch (e) {
-      print('Error getting notifications enabled: $e');
-      return false;
-    }
-  }
-
-  Future<void> setNotificationsEnabled(bool value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_notificationsEnabledKey, value);
-    } catch (e) {
-      print('Error setting notifications enabled: $e');
+      developer.log('Error setting sound: $e', name: 'settings_service');
     }
   }
 }

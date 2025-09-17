@@ -1,6 +1,5 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:myapp/data/prayer_data.dart';
 import 'package:myapp/models/prayer.dart';
 import 'package:myapp/pages/blessing_page.dart';
@@ -9,7 +8,6 @@ import 'package:myapp/pages/settings_page.dart';
 import 'package:myapp/providers/alarm_provider.dart';
 import 'package:myapp/widgets/app_bottom_navigation.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
 
@@ -32,69 +30,21 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _selectedIndex = widget.initialTabIndex ?? 0;
     _prayers = List.from(prayerList);
-    // Jump to the initial page if specified
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.initialTabIndex != null) {
         _pageController.jumpToPage(widget.initialTabIndex!);
       }
-      _requestPermissions();
     });
   }
 
-  Future<void> _requestPermissions() async {
-    try {
-      bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
-      if (!isAllowed) {
-        await AwesomeNotifications().requestPermissionToSendNotifications();
-      }
-
-      var status = await Permission.systemAlertWindow.status;
-      if (status.isDenied) {
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text('ნებართვაა საჭირო', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-              content: const Text(
-                  'აპლიკაციას სჭირდება ნებართვა, რათა სხვა აპლიკაციების თავზე გამოაჩინოს ლოცვის შეტყობინებები. გთხოვთ, ჩართოთ ეს ნებართვა აპლიკაციის პარამეტრებში.', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('გაუქმება', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                TextButton(
-                  child: const Text('პარამეტრების გახსნა', style: TextStyle(fontFamily: 'BpgNinoMtavruli')),
-                  onPressed: () {
-                    try {
-                      openAppSettings();
-                    } catch (e) {
-                      developer.log('Error opening app settings: $e', name: 'home_screen');
-                    }
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      developer.log('Error requesting permissions: $e', name: 'home_screen');
-    }
-  }
-
   void _onItemTapped(int index) {
-    if (index == 2) {
-      SystemNavigator.pop(); // Exit the app
-    } else {
       setState(() {
         _selectedIndex = index;
       });
       _pageController.jumpToPage(index);
-    }
   }
 
-  void _updatePrayerTime(int index, int hourChange) {
+  void _updatePrayerTime(int index, int hourChange, [int minuteChange = 0]) {
     setState(() {
       final prayer = _prayers[index];
       final timeParts = prayer.time.split(':');
@@ -105,24 +55,16 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       
       int hour = int.parse(timeParts[0]);
+      int minute = int.parse(timeParts[1]);
 
-      int newHour = hour;
+      final newTimeValue = TimeOfDay(hour: hour, minute: minute)
+          .replacing(hour: hour + hourChange, minute: minute + minuteChange);
 
-      if (index == 0) {
-        newHour = (hour + hourChange);
-        if (newHour < 6) newHour = 8;
-        if (newHour > 8) newHour = 6;
-      } else if (index == _prayers.length - 1) {
-        newHour = (hour + hourChange);
-        if (newHour < 22) newHour = 23;
-        if (newHour > 23) newHour = 22;
-      }
-
-      final newTime = '${newHour.toString().padLeft(2, '0')}:00';
+      final newTime = '${newTimeValue.hour.toString().padLeft(2, '0')}:${newTimeValue.minute.toString().padLeft(2, '0')}';
 
       _prayers[index] = prayer.copyWith(
         time: newTime,
-        imagePath: 'assets/images/${newHour.toString().padLeft(2, '0')}.jpg',
+        imagePath: 'assets/images/${newTimeValue.hour.toString().padLeft(2, '0')}.jpg',
       );
       
       try {
@@ -148,15 +90,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result is int) {
-      // The result is the index to switch to
       _onItemTapped(result);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: const CustomAppBar(title: '7 locva'),
       body: PageView(
@@ -167,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         children: [
-          _buildPrayerList(theme),
+          _buildPrayerList(),
           const SettingsPage(),
         ],
       ),
@@ -178,7 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPrayerList(ThemeData theme) {
+  Widget _buildPrayerList() {
+    final theme = Theme.of(context);
+
     String formatTime(String time24) {
       final parts = time24.split(':');
       final hour = int.parse(parts[0]);
@@ -191,17 +132,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
-          child: ElevatedButton.icon(
-            onPressed: () => _navigateTo(context, const BlessingPage()),
-            icon: const Icon(Icons.video_library),
-            label: const Text('პატრიარქის კურთხევა'),
-            style: theme.elevatedButtonTheme.style,
+          padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _navigateTo(context, const BlessingPage()),
+              icon: const Icon(Icons.video_library_outlined),
+              label: const Text('პატრიარქის კურთხევა'),
+            ),
           ),
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
             itemCount: _prayers.length,
             itemBuilder: (context, index) {
               final prayer = _prayers[index];
@@ -212,29 +155,35 @@ class _HomeScreenState extends State<HomeScreen> {
               bool showTimeChange = isFirst || isLast;
 
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                elevation: 1,
-                shadowColor: Colors.black12,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: InkWell(
-                  onTap: () => _navigateTo(
-                    context,
-                    PrayerDetailPage(
-                      imagePath: prayer.imagePath,
-                      title: prayer.title,
-                      prayerText: prayer.prayerText,
-                    ),
-                  ),
+                  onTap: () async {
+                    if (showTimeChange) {
+                      final newTime = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.fromDateTime(DateTime.parse('2022-01-01 ${prayer.time}:00')),
+                      );
+                      if (newTime != null) {
+                        _updatePrayerTime(index, newTime.hour - int.parse(prayer.time.split(':')[0]), newTime.minute - int.parse(prayer.time.split(':')[1]));
+                      }
+                    } else {
+                      _navigateTo(
+                        context,
+                        PrayerDetailPage(
+                          imagePath: prayer.imagePath,
+                          title: prayer.title,
+                          prayerText: prayer.prayerText,
+                        ),
+                      );
+                    }
+                  },
                   borderRadius: BorderRadius.circular(12),
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
                         child: Row(
                           children: [
-                            Icon(Icons.alarm, color: theme.brightness == Brightness.dark ? Colors.white : theme.primaryColor, size: 28),
+                            Icon(Icons.alarm, color: theme.colorScheme.primary, size: 28),
                             const SizedBox(width: 16.0),
                             Expanded(
                               child: Column(
@@ -242,45 +191,56 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     time,
-                                    style: theme.textTheme.titleLarge,
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                    ),
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 4),
                                   Text(
                                     prayer.title,
-                                    style: theme.textTheme.bodyMedium,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurface.withAlpha(204),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                            Icon(Icons.arrow_forward_ios, size: 16, color: theme.colorScheme.onSurface.withAlpha(127)),
                           ],
                         ),
                       ),
                       if (showTimeChange)
                         Container(
+                          width: double.infinity,
                           decoration: BoxDecoration(
-                            color: theme.cardColor.withAlpha(128),
+                            color: theme.colorScheme.secondaryContainer.withAlpha(102),
                             borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(12),
                               bottomRight: Radius.circular(12),
                             ),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.remove),
+                                  icon: const Icon(Icons.remove_circle_outline),
                                   onPressed: () => _updatePrayerTime(index, -1),
+                                  color: theme.colorScheme.onSecondaryContainer,
                                 ),
                                 Text(
                                   'დროის შეცვლა',
-                                  style: theme.textTheme.labelLarge,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: theme.colorScheme.onSecondaryContainer,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.add),
+                                  icon: const Icon(Icons.add_circle_outline),
                                   onPressed: () => _updatePrayerTime(index, 1),
+                                  color: theme.colorScheme.onSecondaryContainer,
                                 ),
                               ],
                             ),

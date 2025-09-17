@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/widgets/app_bottom_navigation.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
@@ -18,58 +17,52 @@ class PrayerDetailPage extends StatelessWidget {
   });
 
   void _onItemTapped(BuildContext context, int index) {
-    if (index == 3) {
-      SystemNavigator.pop(); // Exit the app
-    } else {
-      // Pop the current page and pass the selected index back to the previous screen (HomeScreen)
-      Navigator.pop(context, index);
+    if (index == 2) {
+      Navigator.pop(context);
+    } else if (index == 0) {
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false, arguments: 0);
+    } else if (index == 1) {
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false, arguments: 1);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // We set the current index to 0 (Home) because this page is conceptually part of the 'Home' flow.
     const int currentIndex = 0;
 
     return Consumer<SettingsController>(
       builder: (context, settingsController, child) {
         return Scaffold(
-          appBar: const CustomAppBar(title: '7 locva'),
+          appBar: const CustomAppBar(
+            title: '7 locva',
+            automaticallyImplyLeading: true,
+          ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'BpgNinoMtavruli',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8.0),
-                const Divider(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12.0),
-                    child: Image.asset(
-                      imagePath,
-                      width: double.infinity,
-                      height: 220,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 16.0),
+                const Divider(),
+                const SizedBox(height: 16.0),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Image.asset(
+                    imagePath,
+                    width: double.infinity,
+                    height: 250,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                  ),
+                ),
+                const SizedBox(height: 24.0),
                 Text(
                   prayerText,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     fontSize: settingsController.fontSize,
+                    height: 1.6,
+                    letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.justify,
                 ),
@@ -77,7 +70,7 @@ class PrayerDetailPage extends StatelessWidget {
             ),
           ),
           bottomNavigationBar: AppBottomNavigation(
-            currentIndex: currentIndex, // Always highlight 'Home'
+            currentIndex: currentIndex,
             onTap: (index) => _onItemTapped(context, index),
           ),
         );

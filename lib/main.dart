@@ -7,62 +7,15 @@ import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/services/settings_service.dart';
 import 'package:myapp/alarm_page.dart';
 import 'package:myapp/pages/splash_screen.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:myapp/pages/test_reminder_page.dart';
 import 'dart:developer' as developer;
-
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-@pragma('vm:entry-point')
-void showTestNotification() {
-  try {
-    AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: 123,
-        channelKey: 'basic_channel',
-        title: 'სატესტო შეტყობინება',
-        body: 'ეს არის სატესტო შეტყობინება.',
-        fullScreenIntent: true,
-        autoDismissible: false,
-        backgroundColor: Colors.red,
-        payload: {'screen': 'test_reminder'}, 
-      ),
-    );
-  } catch (e) {
-    developer.log('Error creating test notification: $e', name: 'main');
-  }
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AndroidAlarmManager.initialize();
-  
-  try {
-    await AwesomeNotifications().initialize(
-      null,
-      [
-        NotificationChannel(
-          channelKey: 'basic_channel',
-          channelName: 'Basic notifications',
-          channelDescription: 'Notification channel for basic tests',
-          defaultColor: const Color(0xFF9D50DD),
-          ledColor: Colors.white,
-          importance: NotificationImportance.Max,
-          channelShowBadge: true,
-          locked: true,
-          defaultRingtoneType: DefaultRingtoneType.Notification,
-        )
-      ],
-      debug: true,
-    );
-  } catch (e) {
-    developer.log('Error initializing notifications: $e', name: 'main');
-  }
 
   final settingsController = SettingsController(SettingsService());
-  
+
   try {
     await settingsController.loadSettings();
   } catch (e) {
@@ -85,24 +38,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    try {
-      AwesomeNotifications().setListeners(
-        onActionReceivedMethod: (ReceivedAction receivedAction) async {
-          try {
-            if (receivedAction.payload != null && receivedAction.payload!['screen'] == 'test_reminder') {
-              navigatorKey.currentState?.pushNamed('/test_reminder');
-            }
-          } catch (e) {
-            developer.log('Error handling notification action: $e', name: 'main');
-          }
-        },
-      );
-    } catch (e) {
-      developer.log('Error setting notification listeners: $e', name: 'main');
-    }
-    
     return Consumer<SettingsController>(
       builder: (context, settingsController, child) {
+        const Color primarySeedColor = Color(0xFF7B4DFF);
+
         final TextTheme appTextTheme = TextTheme(
           displayLarge: const TextStyle(
               fontFamily: 'BpgNinoMtavruli',
@@ -123,109 +62,128 @@ class MyApp extends StatelessWidget {
 
         final ThemeData lightTheme = ThemeData(
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFFFFFFFF),
-          cardColor: const Color(0xFFF8F8F8),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: primarySeedColor,
+            brightness: Brightness.light,
+            surface: const Color(0xFFFBFBFF),
+          ),
           textTheme: appTextTheme.apply(
-              bodyColor: const Color(0xFF1A1A1A),
-              displayColor: const Color(0xFF1A1A1A)),
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF7B4DFF),
-            onPrimary: Colors.white,
-            secondary: Color(0xFFEDE5FF),
-            onSecondary: Color(0xFF7B4DFF),
-            surface: Color(0xFFFFFFFF),
-            onSurface: Color(0xFF1A1A1A),
-            error: Colors.red,
-            onError: Colors.white,
+              bodyColor: Colors.black87,
+              displayColor: Colors.black87
           ),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFFFFFFFF),
-            foregroundColor: Color(0xFF1A1A1A),
-            elevation: 0,
+            backgroundColor: primarySeedColor,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shadowColor: Color.fromRGBO(0, 0, 0, 0.2),
             titleTextStyle: TextStyle(
-                fontFamily: 'Eka',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A)),
+              fontFamily: 'Eka',
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
-              backgroundColor: const Color(0xFF7B4DFF),
+              backgroundColor: primarySeedColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(12)),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               textStyle: const TextStyle(
                   fontFamily: 'BpgNinoMtavruli',
                   fontSize: 16,
-                  fontWeight: FontWeight.w500),
-            ).copyWith(elevation: ButtonStyleButton.allOrNull<double>(0.0)),
+                  fontWeight: FontWeight.bold),
+            ),
           ),
-          iconTheme: const IconThemeData(color: Color(0xFF7B4DFF)),
-          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-            selectedItemColor: Color(0xFF7B4DFF),
-            unselectedItemColor: Color(0xFF999999),
-            selectedLabelStyle: TextStyle(fontFamily: 'BpgNinoMtavruli'),
-            unselectedLabelStyle: TextStyle(fontFamily: 'BpgNinoMtavruli'),
+          cardTheme: CardThemeData(
+            elevation: 1.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.grey.shade200, width: 1),
+            ),
+            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           ),
-          tabBarTheme: const TabBarThemeData(
-            labelColor: Color(0xFF7B4DFF),
-            unselectedLabelColor: Color(0xFF999999),
+          iconTheme: const IconThemeData(color: primarySeedColor),
+          bottomNavigationBarTheme: BottomNavigationBarThemeData(
+            selectedItemColor: primarySeedColor,
+            unselectedItemColor: Colors.grey.shade600,
+            selectedLabelStyle: const TextStyle(fontFamily: 'BpgNinoMtavruli', fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontFamily: 'BpgNinoMtavruli'),
+            backgroundColor: Colors.white,
+            elevation: 8.0,
+          ),
+          tabBarTheme: TabBarThemeData(
+            labelColor: primarySeedColor,
+            unselectedLabelColor: Colors.grey.shade600,
+            indicator: const UnderlineTabIndicator(
+              borderSide: BorderSide(color: primarySeedColor, width: 2.0),
+            ),
           ),
         );
 
         final ThemeData darkTheme = ThemeData(
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFF121212),
-          cardColor: const Color(0xFF1E1E1E),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: primarySeedColor,
+            brightness: Brightness.dark,
+            surface: const Color(0xFF1A1A1A),
+          ),
           textTheme: appTextTheme.apply(
-              bodyColor: const Color(0xFFFFFFFF),
-              displayColor: const Color(0xFFFFFFFF)),
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFFBB86FC),
-            onPrimary: Colors.black,
-            secondary: Color(0xFF2C1F4B),
-            onSecondary: Color(0xFFBB86FC),
-            surface: Color(0xFF121212),
-            onSurface: Color(0xFFFFFFFF),
-            error: Colors.red,
-            onError: Colors.white,
+              bodyColor: Colors.white.withAlpha(222),
+              displayColor: Colors.white.withAlpha(222)
           ),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF121212),
-            foregroundColor: Color(0xFFFFFFFF),
-            elevation: 0,
+            backgroundColor: Color(0xFF1E1E1E),
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shadowColor: Color.fromRGBO(0, 0, 0, 0.5),
             titleTextStyle: TextStyle(
-                fontFamily: 'Eka',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFFFFFFF)),
+              fontFamily: 'Eka',
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: const Color(0xFFBB86FC),
+              foregroundColor: Colors.white,
+              backgroundColor: primarySeedColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(12)),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               textStyle: const TextStyle(
                   fontFamily: 'BpgNinoMtavruli',
                   fontSize: 16,
-                  fontWeight: FontWeight.w500),
-            ).copyWith(elevation: ButtonStyleButton.allOrNull<double>(0.0)),
+                  fontWeight: FontWeight.bold),
+            ),
           ),
-          iconTheme: const IconThemeData(color: Color(0xFFBB86FC)),
-          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-            selectedItemColor: Color(0xFFBB86FC),
-            unselectedItemColor: Color(0xFF888888),
-            selectedLabelStyle: TextStyle(fontFamily: 'BpgNinoMtavruli'),
-            unselectedLabelStyle: TextStyle(fontFamily: 'BpgNinoMtavruli'),
+          cardTheme: CardThemeData(
+            color: const Color(0xFF1E1E1E),
+            elevation: 2.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+               side: BorderSide(color: Colors.grey.shade800, width: 1),
+            ),
+             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           ),
-          tabBarTheme: const TabBarThemeData(
-            labelColor: Color(0xFFBB86FC),
-            unselectedLabelColor: Color(0xFF888888),
+          iconTheme: IconThemeData(color: lightTheme.colorScheme.primary),
+          bottomNavigationBarTheme: BottomNavigationBarThemeData(
+            selectedItemColor: lightTheme.colorScheme.primary,
+            unselectedItemColor: Colors.grey.shade400,
+            selectedLabelStyle: const TextStyle(fontFamily: 'BpgNinoMtavruli', fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontFamily: 'BpgNinoMtavruli'),
+            backgroundColor: const Color(0xFF1E1E1E),
+            elevation: 8.0,
+          ),
+          tabBarTheme: TabBarThemeData(
+            labelColor: lightTheme.colorScheme.primary,
+            unselectedLabelColor: Colors.grey.shade400,
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(color: lightTheme.colorScheme.primary, width: 2.0),
+            ),
           ),
         );
 
@@ -244,8 +202,6 @@ class MyApp extends StatelessWidget {
                   ModalRoute.of(context)!.settings.arguments as int;
               return AlarmPage(alarmId: alarmId);
             },
-            '/test_reminder': (context) => const TestReminderPage(),
-
           },
           debugShowCheckedModeBanner: false,
         );
