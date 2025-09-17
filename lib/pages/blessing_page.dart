@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:myapp/widgets/app_bottom_navigation.dart';
-import 'package:myapp/widgets/custom_app_bar.dart';
 import 'dart:developer' as developer;
 
 class BlessingPage extends StatefulWidget {
@@ -58,10 +57,6 @@ class _BlessingPageState extends State<BlessingPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '7 locva',
-        automaticallyImplyLeading: true,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         child: Column(

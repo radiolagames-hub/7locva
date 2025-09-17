@@ -10,6 +10,7 @@ import 'package:myapp/widgets/app_bottom_navigation.dart';
 import 'package:myapp/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -38,10 +39,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
+    if (index == 2) {
+      // Exit the app
+      exit(0);
+    } else {
       setState(() {
         _selectedIndex = index;
       });
       _pageController.jumpToPage(index);
+    }
   }
 
   void _updatePrayerTime(int index, int hourChange, [int minuteChange = 0]) {

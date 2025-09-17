@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/controllers/settings_controller.dart';
 import 'package:myapp/widgets/sound_selection.dart';
-import 'package:myapp/widgets/custom_app_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,12 +12,38 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _notificationStatus = false;
+
   @override
   void initState() {
     super.initState();
+    _checkNotificationPermission();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SettingsController>(context, listen: false).loadSettings();
     });
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final status = await Permission.notification.status;
+    setState(() {
+      _notificationStatus = status.isGranted;
+    });
+  }
+
+  Future<void> _toggleNotificationPermission(bool value) async {
+    if (value) {
+      final status = await Permission.notification.request();
+      if (status.isGranted) {
+        setState(() {
+          _notificationStatus = true;
+        });
+      } else {
+        // Handle the case where the user denies the permission
+        openAppSettings();
+      }
+    } else {
+      openAppSettings();
+    }
   }
 
   @override
@@ -27,19 +53,49 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      appBar: const CustomAppBar(title: '7 locva'),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          _buildSectionTitle(context, 'შეხსენების ხმა'),
-          const SoundSelection(),
+          _buildSectionTitle(context, 'ნებართვები'),
+          _buildPermissionsSection(context, theme),
           const SizedBox(height: 16),
           _buildSectionTitle(context, 'თემა'),
           _buildThemeSelector(context, settingsController, theme),
           const SizedBox(height: 16),
           _buildSectionTitle(context, 'ლოცვების ტექსტის ზომა'),
           _buildFontSizeSlider(context, settingsController, theme),
+          const SizedBox(height: 16),
+          _buildSectionTitle(context, 'შეხსენების ხმა'),
+          const SoundSelection(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPermissionsSection(BuildContext context, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('შეტყობინებები', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text('მაღვიძარას და შეხსენებებისთვის', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                ],
+              ),
+            ),
+            Switch(
+              value: _notificationStatus,
+              onChanged: _toggleNotificationPermission,
+            ),
+          ],
+        ),
       ),
     );
   }

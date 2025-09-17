@@ -36,7 +36,6 @@ class PrayerDetailPage extends StatelessWidget {
         return Scaffold(
           appBar: const CustomAppBar(
             title: '7 locva',
-            automaticallyImplyLeading: true,
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),

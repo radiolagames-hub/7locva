@@ -8,6 +8,7 @@ import 'package:myapp/services/settings_service.dart';
 import 'package:myapp/alarm_page.dart';
 import 'package:myapp/pages/splash_screen.dart';
 import 'dart:developer' as developer;
+import 'package:myapp/widgets/custom_app_bar.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -193,9 +194,11 @@ class MyApp extends StatelessWidget {
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: settingsController.themeMode,
-          initialRoute: '/',
+          home: Scaffold(
+            appBar: const CustomAppBar(title: '7 ლოცვა'),
+            body: const SplashScreen(),
+          ),
           routes: {
-            '/': (context) => const SplashScreen(),
             '/home': (context) => const HomeScreen(),
             '/alarm': (context) {
               final int alarmId =

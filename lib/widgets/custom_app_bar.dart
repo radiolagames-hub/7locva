@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final bool automaticallyImplyLeading;
+  final bool showBackButton;
 
   const CustomAppBar({
     super.key,
     required this.title,
-    this.automaticallyImplyLeading = true,
+    this.showBackButton = false,
   });
 
   @override
@@ -17,8 +17,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title, style: theme.appBarTheme.titleTextStyle),
       backgroundColor: theme.appBarTheme.backgroundColor,
       elevation: theme.appBarTheme.elevation,
-      iconTheme: theme.iconTheme, // Ensures the back arrow has the correct color
-      automaticallyImplyLeading: automaticallyImplyLeading,
+      centerTitle: true, // Center the title
+      automaticallyImplyLeading: false, // Remove automatic back button
+      leading: showBackButton
+          ? IconButton(
+              icon: Icon(Icons.arrow_back, color: theme.iconTheme.color),
+              onPressed: () => Navigator.of(context).pop(),
+            )
+          : null,
     );
   }
 

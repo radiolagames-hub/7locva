@@ -23,7 +23,7 @@ class _AlarmPageState extends State<AlarmPage> {
     super.initState();
     _player = AudioPlayer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       _playSound();
+      _playSound();
     });
   }
 
@@ -116,10 +116,12 @@ class _AlarmPageState extends State<AlarmPage> {
             AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
+              leading: Container(),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white, size: 30),
                   onPressed: _dismiss,
+                  tooltip: 'გამოტოვება',
                 ),
               ],
             ),
@@ -130,21 +132,40 @@ class _AlarmPageState extends State<AlarmPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'ლოცვის დროა!',
-                      style: theme.textTheme.displaySmall?.copyWith(
+                      prayer.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Eka',
+                        fontFamily: 'BpgNinoMtavruli',
+                        fontSize: 28,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10.0,  
+                            color: Colors.black, 
+                            offset: Offset(2.0, 2.0),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       prayer.time,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white70,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Eka', 
+                        fontSize: 64,
+                        fontWeight: FontWeight.w600,
+                         shadows: [
+                          Shadow(
+                            blurRadius: 8.0,  
+                            color: Colors.black54, 
+                            offset: Offset(2.0, 2.0),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 70),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -153,25 +174,7 @@ class _AlarmPageState extends State<AlarmPage> {
                       ],
                     ),
                     const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _readPrayer,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade400,
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(24),
-                        elevation: 8,
-                        shadowColor: Colors.green.shade200.withAlpha(178),
-                      ),
-                      child: const Text(
-                        'წაკითხვა',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'BpgNinoMtavruli',
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    _buildReadButton(),
                   ],
                 ),
               ),
@@ -183,17 +186,42 @@ class _AlarmPageState extends State<AlarmPage> {
   }
 
   Widget _buildSnoozeButton(BuildContext context, String label, int minutes) {
-    return ElevatedButton(
+    return ElevatedButton.icon(
       onPressed: () => _snooze(minutes),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.9),
+        foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
-      child: Text(label),
+      icon: const Icon(Icons.alarm, size: 18),
+      label: Text(label),
+    );
+  }
+
+  Widget _buildReadButton() {
+    return GestureDetector(
+      onTap: _readPrayer,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.green.withOpacity(0.2),
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: Colors.green, width: 2),
+        ),
+        child: const Text(
+          'წაკითხვა',
+          style: TextStyle(
+            fontSize: 22,
+            fontFamily: 'BpgNinoMtavruli',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 }
