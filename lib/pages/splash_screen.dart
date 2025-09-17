@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       try {
         await AwesomeNotifications().initialize(
-          null, // Use default app icon
+          'resource://drawable/notification_icon', // Use the new notification icon
           [
             NotificationChannel(
               channelKey: 'alarm_channel',

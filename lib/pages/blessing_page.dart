@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:myapp/widgets/app_bottom_navigation.dart';
+import 'package:myapp/widgets/custom_app_bar.dart';
 import 'dart:developer' as developer;
 
 class BlessingPage extends StatefulWidget {
@@ -35,16 +35,6 @@ class _BlessingPageState extends State<BlessingPage> {
       });
   }
 
-  void _onItemTapped(BuildContext context, int index) {
-    if (index == 2) {
-      Navigator.pop(context);
-    } else if (index == 0) {
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false, arguments: 0);
-    } else if (index == 1) {
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false, arguments: 1);
-    }
-  }
-
   @override
   void dispose() {
     _controller1.dispose();
@@ -57,6 +47,7 @@ class _BlessingPageState extends State<BlessingPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: CustomAppBar(title: 'პატრიარქის კურთხევა', showBackButton: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         child: Column(
@@ -66,10 +57,6 @@ class _BlessingPageState extends State<BlessingPage> {
             _buildVideoPlayer(theme, _controller2, 'კურთხევა 2'),
           ],
         ),
-      ),
-      bottomNavigationBar: AppBottomNavigation(
-        currentIndex: 0, 
-        onTap: (index) => _onItemTapped(context, index),
       ),
     );
   }

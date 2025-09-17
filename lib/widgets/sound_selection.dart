@@ -65,7 +65,7 @@ class _SoundSelectionState extends State<SoundSelection> {
               secondary: IconButton(
                 icon: Icon(
                   Icons.play_circle_outline,
-                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withAlpha((255 * 0.6).round()),
                 ),
                 onPressed: () => _playSound(soundFile),
               ),

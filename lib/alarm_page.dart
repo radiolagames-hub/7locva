@@ -97,7 +97,6 @@ class _AlarmPageState extends State<AlarmPage> {
   @override
   Widget build(BuildContext context) {
     final prayer = prayerList[widget.alarmId];
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: Container(
@@ -189,7 +188,7 @@ class _AlarmPageState extends State<AlarmPage> {
     return ElevatedButton.icon(
       onPressed: () => _snooze(minutes),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.9),
+        backgroundColor: Theme.of(context).colorScheme.primary.withAlpha((255 * 0.9).round()),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -207,7 +206,7 @@ class _AlarmPageState extends State<AlarmPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.2),
+          color: Colors.green.withAlpha((255 * 0.2).round()),
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(50),
           border: Border.all(color: Colors.green, width: 2),
